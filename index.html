@@ -124,6 +124,11 @@ body.gate nav,body.gate .me{display:none}
 .rc{align-items:center;display:flex}
 input[type=range]{padding:0;border:0;background:none;accent-color:var(--g1);min-height:32px}.rc>div:nth-child(2){flex:1}
 .cat:focus-visible,.rc:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.set{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.set:first-of-type{border-top:0}
+.set b{display:block;font-size:15px}.set small{color:var(--mute);font-size:13px}
+.sw{appearance:none;-webkit-appearance:none;flex:none;width:52px;min-height:0;height:30px;padding:0;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;transition:background .2s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.sw:checked{background:var(--g2)}.sw:checked:after{transform:translateX(22px)}
 .hero .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.65);box-shadow:none}
 </style>
 </head>
@@ -159,17 +164,28 @@ ads:[
 {id:8,cat:"Ménage",title:"Ménage à domicile",who:"Julie",area:"Centre",price:"14 €/h",desc:"Appartement ou maison, produits écologiques fournis."},
 {id:9,cat:"Jardinage",title:"Entretien de jardin",who:"Hugo",area:"Centre",price:"60 € le forfait",desc:"Tonte, désherbage et taille des arbustes pour un prix fixe."}],
 sent:[],accounts:[],authMode:"login",radius:25,q:""};
-try{const s=JSON.parse(localStorage.getItem("cdm")||"null");if(s&&s.user)state.user=s.user;if(s&&s.mine)state.ads=state.ads.concat(s.mine);if(s&&s.accounts)state.accounts=s.accounts}catch(e){}
+try{const s=JSON.parse(localStorage.getItem("cdm")||"null");if(s&&s.user)state.user=s.user;if(s&&s.mine)state.ads=state.ads.concat(s.mine.map(a=>Object.assign({},a,{owner:a.owner||(s.user&&s.user.email)||""})));if(s&&s.accounts)state.accounts=s.accounts}catch(e){}
+const SEED=state.ads.filter(a=>a.id<100);
+window.cdmMerge=function(remote){
+  const em=(state.user&&state.user.email||"").toLowerCase(),map=new Map();
+  SEED.forEach(a=>map.set(a.id,a));
+  const mig=state.ads.filter(a=>a.id>=100&&a.mine&&a.owner&&!remote.some(r=>r.id===a.id));mig.forEach(a=>{map.set(a.id,a);if(window.cdmAds&&!a.sync){a.sync=1;window.cdmAds.publish(a).catch(()=>{a.sync=0})}});
+  remote.forEach(r=>{r.mine=!!em&&String(r.owner||"").toLowerCase()===em;map.set(r.id,r)});
+  state.ads=[...map.values()].sort((x,y)=>y.id-x.id);
+  if(["find","home","profile"].includes(state.view)&&state.user)render();
+};
+function loadRemote(){if(window.cdmAds)window.cdmAds.subscribe(window.cdmMerge)}
 const CITIES={"Paris":[48.8566,2.3522],"Versailles":[48.8049,2.1204],"Saint-Denis":[48.9362,2.3574],"Melun":[48.5408,2.6603],"Orléans":[47.9029,1.9093],"Lyon":[45.764,4.8357],"Villeurbanne":[45.7719,4.8902],"Marseille":[43.2965,5.3698],"Toulouse":[43.6047,1.4442],"Nice":[43.7102,7.262],"Nantes":[47.2184,-1.5536],"Bordeaux":[44.8378,-0.5792],"Lille":[50.6292,3.0573],"Strasbourg":[48.5734,7.7521],"Rennes":[48.1173,-1.6778],"Montpellier":[43.6108,3.8767],"Grenoble":[45.1885,5.7245]};
 const DEP={75:"Paris",69:"Lyon",13:"Marseille",31:"Toulouse",6:"Nice",44:"Nantes",33:"Bordeaux",59:"Lille",67:"Strasbourg",35:"Rennes",34:"Montpellier",38:"Grenoble"};
 const AC={1:"Paris",2:"Versailles",3:"Saint-Denis",4:"Melun",5:"Lyon",6:"Orléans",7:"Lyon",8:"Marseille",9:"Villeurbanne"};
 const ucity=u=>(u&&(u.city||DEP[+String(u.cp||"").slice(0,2)]))||"";
 const homeCity=()=>{const c=ucity(state.user);return Object.keys(CITIES).find(x=>norm(x)===norm(c))||DEP[+String(state.user&&state.user.cp||"").slice(0,2)]||"Paris"};
-const center=()=>state.center||homeCity();
+const baseCity=()=>{const u=state.user;return u&&u.geo&&u.geoCity&&CITIES[u.geoCity]?u.geoCity:homeCity()};
+const center=()=>state.center||baseCity();
 const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/-/g," ").toLowerCase().trim();
 const dist=(p,q)=>{const r=Math.PI/180,dl=(q[0]-p[0])*r,dn=(q[1]-p[1])*r,x=Math.sin(dl/2)**2+Math.cos(p[0]*r)*Math.cos(q[0]*r)*Math.sin(dn/2)**2;return Math.round(12742*Math.asin(Math.sqrt(x)))};
-const locOf=a=>a.mine?homeCity():AC[a.id]||"Paris";
-const cityOf=a=>a.mine?(ucity(state.user)||homeCity()):AC[a.id]||"Paris";
+const locOf=a=>a.loc&&CITIES[a.loc]?a.loc:(a.mine?homeCity():AC[a.id]||"Paris");
+const cityOf=a=>a.city||(a.mine?(ucity(state.user)||homeCity()):AC[a.id]||"Paris");
 const kmFrom=(a,c)=>dist(CITIES[locOf(a)],CITIES[c]);
 const km=a=>kmFrom(a,center());
 const RT={1:[4.8,23],2:[4.6,15],3:[5,8],4:[4.7,31],5:[4.9,42],6:[4.5,12],7:[4.4,9],8:[4.8,20],9:[4.7,6]};
@@ -180,7 +196,8 @@ const $=s=>document.querySelector(s),main=$("#main");
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function save(){try{localStorage.setItem("cdm",JSON.stringify({user:state.user,mine:state.ads.filter(a=>a.mine),accounts:state.accounts}))}catch(e){}}
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
-function go(v){state.view=v;render();window.scrollTo(0,0)}
+function remine(){const em=(state.user&&state.user.email||"").toLowerCase();state.ads.forEach(a=>{if(a.owner!==undefined)a.mine=!!em&&String(a.owner).toLowerCase()===em})}
+function go(v){state.view=v;remine();render();window.scrollTo(0,0)}
 function render(){
   setMe();
   if(!state.user&&!["welcome","profile"].includes(state.view))state.view="welcome";
@@ -191,7 +208,7 @@ function render(){
   badge();
 }
 function home(){
-  const u=state.user,sent=(u.convs||[]).length,mine=state.ads.filter(a=>a.mine).length,kh=a=>kmFrom(a,homeCity()),recent=state.ads.filter(a=>!a.mine&&kh(a)<=state.radius).sort((x,y)=>kh(x)-kh(y)).slice(0,3);
+  const u=state.user,sent=(u.convs||[]).length,mine=state.ads.filter(a=>a.mine).length,kh=a=>kmFrom(a,baseCity()),recent=state.ads.filter(a=>!a.mine&&kh(a)<=state.radius).sort((x,y)=>kh(x)-kh(y)).slice(0,3);
   main.innerHTML=`<h2 class="t" style="margin-bottom:4px">Bonjour ${esc(u.name)}</h2>
   <p class="meta" style="margin:0 0 14px">Que cherchez-vous aujourd'hui ?</p>
   <form id="sf" role="search"><label for="q" class="sr">Rechercher un service</label><input id="q" type="search" placeholder="Jardinage, bricolage, courses…" maxlength="40"></form>
@@ -210,7 +227,7 @@ function find(){
   ${state.q?'<p class="meta">Résultats pour « '+esc(state.q)+' » <button class="chip" id="cq" type="button">Effacer</button></p>':""}
   <form class="card" id="cf2" style="padding:14px" novalidate><label for="city" style="margin:0 0 6px">Ville</label><div class="row2" style="flex-wrap:nowrap"><input id="city" list="cities" value="${esc(center())}" placeholder="Tapez une ville" autocomplete="off"><button class="btn solid" type="submit">OK</button></div>
   <datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist><div class="err" id="ce" role="alert"></div>
-  ${center()!==homeCity()?'<button class="chip" id="hm" type="button" style="margin-bottom:8px">Revenir à '+esc(homeCity())+'</button>':""}
+  ${center()!==baseCity()?'<button class="chip" id="hm" type="button" style="margin-bottom:8px">Revenir à '+esc(baseCity())+'</button>':""}
   <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="100" step="1" value="${state.radius}"></form>
   <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
   ${list.length?list.map(a=>`<article class="card"><div class="item"><div class="av" aria-hidden="true">${a.mine&&state.user&&state.user.photo?'<img src="'+state.user.photo+'" alt="">':EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${km(a)} km${starTxt(a)}</div></div></div>
@@ -242,18 +259,37 @@ function offer(){
     if(!t||!d){$("#e").textContent="Renseignez le titre et la description.";return}
     if(ty!=="g"&&!(n>=1&&n<=9999)){$("#e").textContent="Indiquez un montant en euros, entre 1 et 9999.";return}
     const p=ty==="g"?"Gratuit":String(Math.round(n*100)/100).replace(".",",")+(ty==="h"?" €/h":" € le forfait");
-    state.ads.unshift({id:Date.now(),cat:$("#cat").value,title:t,desc:d,price:p,who:state.user.name,area:ucity(state.user),mine:true});save();toast("Annonce publiée");state.filter="Tous";go("find")};
+    const ad={id:Date.now(),cat:$("#cat").value,title:t,desc:d,price:p,who:state.user.name,area:ucity(state.user),city:ucity(state.user)||homeCity(),loc:homeCity(),owner:state.user.email||"",mine:true};
+    state.ads.unshift(ad);save();state.filter="Tous";
+    if(window.cdmAds){window.cdmAds.publish(ad).then(()=>toast("Annonce publiée : tout le monde peut la voir")).catch(()=>toast("Annonce enregistrée sur votre appareil seulement (connexion à la base impossible)"))}else toast("Annonce enregistrée sur votre appareil seulement");
+    go("find")};
 }
 function profile(){
   if(state.user){const mine=state.ads.filter(a=>a.mine);
     main.innerHTML=`<h2 class="t">Mon profil</h2><div class="card"><div class="item">${av(state.user)}<div><h3>${esc(state.user.name)}</h3><div class="meta">${esc(ucity(state.user))}</div></div></div><button class="btn solid" id="ph" style="width:100%;margin-top:14px">${state.user.photo?"Changer ma photo":"Ajouter une photo"}</button><button class="btn" id="ed" style="width:100%;margin-top:8px;background:var(--mint);color:var(--ink)">Modifier mes informations</button></div>
     <div class="card"><h3>Mes informations</h3><p class="meta">${esc(state.user.name)} ${esc(state.user.lastName||"")}<br>${esc(state.user.email||"")}<br>${esc(state.user.phone||"")}<br>${esc(state.user.address||"")}, ${esc(state.user.cp||"")} ${esc(ucity(state.user))}${state.user.birth?"<br>Né(e) le "+new Date(state.user.birth+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}</p></div>
     <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<p>${EMO[a.cat]} ${esc(a.title)} <span class="meta">· ${esc(a.price)}</span></p>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
+    <div class="card"><h3>Paramètres</h3>
+    <label class="set" for="sg" style="margin:0;font-weight:400"><span><b>Localisation</b><small>${state.user.geo&&state.user.geoCity?"Active · position proche de "+esc(state.user.geoCity):"Utiliser ma position pour trouver les annonces autour de moi"}</small></span><input type="checkbox" class="sw" id="sg" role="switch" ${state.user.geo?"checked":""}></label>
+    <label class="set" for="sn" style="margin:0;font-weight:400"><span><b>Notifications</b><small>Alertes pour les nouveaux messages</small></span><input type="checkbox" class="sw" id="sn" role="switch" ${state.user.notif!==false?"checked":""}></label></div>
     <button class="btn solid" id="out" style="width:100%">Se déconnecter</button><button class="btn" id="rm" style="width:100%;margin-top:8px;background:transparent;color:var(--err);border:1px solid var(--err)">Supprimer mon compte</button>`;
+    $("#sn").onchange=e=>{const u=state.user;u.notif=e.target.checked;save();badge();
+      if(u.notif&&"Notification" in window&&Notification.permission==="default")try{Notification.requestPermission()}catch(x){}
+      toast(u.notif?"Notifications activées":"Notifications désactivées")};
+    $("#sg").onchange=e=>{const u=state.user,sw=e.target;
+      if(!sw.checked){u.geo=false;u.geoCity="";state.center=null;save();toast("Localisation désactivée");return profile()}
+      if(!navigator.geolocation){sw.checked=false;return toast("La localisation n'est pas disponible sur cet appareil")}
+      toast("Recherche de votre position…");
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const p=[pos.coords.latitude,pos.coords.longitude];let best="",bd=1e9;
+        Object.keys(CITIES).forEach(c=>{const d=dist(p,CITIES[c]);if(d<bd){bd=d;best=c}});
+        u.geo=true;u.geoCity=best;state.center=null;save();toast("Localisation activée : "+best);profile()},
+      err=>{sw.checked=false;toast(err&&err.code===1?"Autorisez la localisation dans les réglages du navigateur":"Position introuvable, réessayez")},
+      {enableHighAccuracy:false,timeout:10000,maximumAge:600000})};
     $("#ph").onclick=()=>go("photo");
     $("#ed").onclick=()=>go("edit");
     $("#rm").onclick=()=>go("delAcc");
-    $("#out").onclick=()=>{state.user=null;state.ads=state.ads.filter(a=>!a.mine);state.sent=[];save();state.center=null;toast("Vous êtes déconnecté");go("welcome")};return}
+    $("#out").onclick=()=>{state.user=null;state.ads=state.ads.filter(a=>!a.mine);state.sent=[];save();state.center=null;toast("Vous êtes déconnecté");go("welcome");loadRemote()};return}
   return auth();
 }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>go(b.dataset.v));
@@ -359,7 +395,7 @@ function edit(){
     if(vl.length<2)return err("Indiquez votre ville.");
     if(state.accounts.some(x=>x!==u&&x.email===m))return err("Un autre compte utilise déjà cet e-mail.");
     Object.assign(u,{name:pn,lastName:nm,birth:bd,address:ad,cp:cp,phone:tel,email:m,city:vl,area:vl});
-    state.ads.forEach(a=>{if(a.mine){a.who=pn;a.area=vl}});
+    state.ads.forEach(a=>{if(a.mine){a.who=pn;a.area=vl;a.city=vl}});
     save();toast("Informations enregistrées");go("profile")};
   $("#g").onsubmit=async ev=>{ev.preventDefault();
     const np=$("#np").value,cf=$("#cf").value;
@@ -372,7 +408,7 @@ function edit(){
 function delAcc(){
   const u=state.user;if(!u)return go("profile");
   main.innerHTML=`<h2 class="t">Supprimer mon compte</h2>
-  <form class="card" id="f" novalidate><p>Cette action est définitive. Votre profil, votre photo et vos annonces seront effacés de cet appareil.</p>
+  <form class="card" id="f" novalidate><p>Cette action est définitive. Votre profil et votre photo seront effacés de cet appareil, et vos annonces seront retirées du site.</p>
   ${u.pw?`<label for="op">Mot de passe</label><input id="op" type="password" autocomplete="current-password">`:`<label for="cf">Tapez SUPPRIMER pour confirmer</label><input id="cf" autocomplete="off">`}
   <div class="err" id="e" role="alert"></div>
   <button class="btn" type="submit" style="width:100%;background:var(--err);color:#fff">Supprimer définitivement</button></form>
@@ -382,12 +418,12 @@ function delAcc(){
     try{if(u.pw){const p=$("#op").value;if(!p)return err("Saisissez votre mot de passe.");if(!await chk(u,p))return err("Le mot de passe est incorrect.")}
       else if($("#cf").value.trim().toUpperCase()!=="SUPPRIMER")return err("Tapez SUPPRIMER pour confirmer.")}
     catch(x){return err("Impossible de vérifier le mot de passe sur cet appareil.")}
-    state.accounts=state.accounts.filter(a=>a!==u);state.ads=state.ads.filter(a=>!a.mine);state.user=null;state.sent=[];state.authMode="login";save();
+    if(window.cdmAds)window.cdmAds.removeMine(u.email);state.accounts=state.accounts.filter(a=>a!==u);state.ads=state.ads.filter(a=>!a.mine);state.user=null;state.sent=[];state.authMode="login";save();
     state.center=null;toast("Votre compte a été supprimé");go("welcome")};
 }
 const REPLIES=["Bonjour ! Oui, je suis disponible. Quel jour vous arrangerait ?","Très bien, ça me convient. On se met d'accord sur le tarif sur place ?","Parfait, à bientôt !"];
 const hh=t=>new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&(u.convs||[]).some(c=>c.unread))}
+function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&u.notif!==false&&(u.convs||[]).some(c=>c.unread))}
 function inbox(){
   const u=state.user,cs=(u.convs||[]).slice().sort((a,b)=>b.msgs[b.msgs.length-1].t-a.msgs[a.msgs.length-1].t);
   main.innerHTML=`<h2 class="t">Messages</h2>${cs.length?cs.map(c=>{const l=c.msgs[c.msgs.length-1];return `<button class="card item rc" data-id="${c.id}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[c.cat]}</div><div><h3>${esc(c.who)}${c.unread?' <span class="price">Nouveau</span>':""}</h3><div class="meta">${esc(c.title)}</div><div class="meta">${esc((l.from==="me"?"Vous : ":"")+l.text.slice(0,60))}</div></div></button>`}).join(""):`<p class="empty">Aucune conversation pour le moment. Touchez « Contacter » sur une annonce pour écrire à un voisin.</p><button class="btn solid" id="gf" style="width:100%">Trouver de l'aide</button>`}`;
@@ -420,7 +456,7 @@ function chat(){
     c.msgs.push({from:"me",text:t,t:Date.now()});$("#mt").value="";save();draw();
     const n=c.msgs.filter(m=>m.from==="me").length,cc=c;
     setTimeout(()=>{if(state.user!==u)return;cc.msgs.push({from:"them",text:REPLIES[Math.min(n,REPLIES.length)-1],t:Date.now()});
-      if(state.view==="chat"&&state.chatId===cc.id){draw()}else{cc.unread=true}save();badge()},1200)};
+      if(state.view==="chat"&&state.chatId===cc.id){draw()}else{cc.unread=true;if(u.notif!==false){toast("Nouveau message de "+cc.who);try{if("Notification" in window&&Notification.permission==="granted"&&document.hidden)new Notification("CoupDeMain",{body:"Nouveau message de "+cc.who})}catch(x){}}}save();badge()},1200)};
 }
 const ME0=$("#me").innerHTML;
 function setMe(){const u=state.user;$("#me").innerHTML=u&&u.photo?'<img src="'+u.photo+'" alt="">':ME0}
@@ -460,7 +496,7 @@ function welcome(){
   $("#li").onclick=()=>{state.authMode="login";go("profile")};
 }
 if(!state.user)state.view="welcome";
-render();
+render();window.addEventListener("cdm-ready",loadRemote);if(window.cdmAds)loadRemote();
 const sp=$("#splash");let done=false;
 function hideSplash(){if(done)return;done=true;sp.classList.add("out");setTimeout(()=>sp.remove(),450)}
 sp.onclick=hideSplash;setTimeout(hideSplash,matchMedia("(prefers-reduced-motion:reduce)").matches?500:3200);
@@ -471,10 +507,19 @@ const firebaseConfig={apiKey:"AIzaSyCYsTRNALY2DX5k4ZQEmEJCScAVL8iXkLM",authDomai
 /* =========================================================================================== */
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-let auth=null;
+import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,query,where,getDocs} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app=initializeApp(firebaseConfig),db=getFirestore(app);
+let auth=null,unsub=null;
+/* ====== ANNONCES PARTAGÉES (Firestore, collection "ads") ====== */
+window.cdmAds={
+  publish:ad=>setDoc(doc(db,"ads",String(ad.id)),{id:ad.id,cat:ad.cat,title:ad.title,desc:ad.desc,price:ad.price,who:ad.who,area:ad.area||"",city:ad.city||"",loc:ad.loc||"",owner:(ad.owner||"").toLowerCase(),created:Date.now()}),
+  subscribe:cb=>{if(unsub)unsub();unsub=onSnapshot(collection(db,"ads"),snap=>{window.cdmRemoteOk=true;cb(snap.docs.map(d=>d.data()).filter(a=>a&&a.id))},()=>{window.cdmRemoteOk=false})},
+  removeMine:async email=>{try{const q=await getDocs(query(collection(db,"ads"),where("owner","==",String(email||"").toLowerCase())));await Promise.all(q.docs.map(d=>deleteDoc(d.ref)))}catch(e){}}
+};
+window.dispatchEvent(new Event("cdm-ready"));
 window.cdmGoogle=async()=>{
   if(!firebaseConfig.apiKey)throw {code:"cdm/not-configured"};
-  if(!auth)auth=getAuth(initializeApp(firebaseConfig));
+  if(!auth)auth=getAuth(app);
   const r=await signInWithPopup(auth,new GoogleAuthProvider());
   return {email:r.user.email,name:r.user.displayName||"",photo:r.user.photoURL||""};
 };
