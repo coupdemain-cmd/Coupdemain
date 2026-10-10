@@ -262,6 +262,8 @@ function auth(){
   const login=state.authMode!=="signup",today=new Date().toISOString().slice(0,10);
   main.innerHTML=`<h2 class="t">${login?"Connexion":"Créer mon compte"}</h2>
   <div class="chips" role="group" aria-label="Connexion ou inscription"><button class="chip" aria-pressed="${login}" data-m="login">Connexion</button><button class="chip" aria-pressed="${!login}" data-m="signup">Inscription</button></div>
+  <button class="btn" id="gg" type="button" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--card);color:var(--ink);border:1px solid rgba(128,128,128,.45);margin-bottom:6px"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>${login?"Se connecter avec Google":"S'inscrire avec Google"}</span></button>
+  <p class="note" style="margin:10px 0">ou avec votre e-mail</p>
   <form class="card" id="f" novalidate>${login?`<label for="m">E-mail</label><input id="m" type="email" autocomplete="email">
   <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password">`:`<label for="pn">Prénom</label><input id="pn" autocomplete="given-name" maxlength="30">
   <label for="nm">Nom</label><input id="nm" autocomplete="family-name" maxlength="30">
@@ -278,6 +280,20 @@ function auth(){
   $("#bk").onclick=()=>go("welcome");
   main.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{state.authMode=b.dataset.m;auth()});
   const err=t=>{$("#e").textContent=t};
+  $("#gg").onclick=async()=>{const gb=$("#gg");err("");
+    if(!window.cdmGoogle)return err("La connexion Google n'est pas disponible pour le moment. Vérifiez votre connexion et réessayez.");
+    gb.disabled=true;
+    try{const g=await window.cdmGoogle(),m=(g.email||"").toLowerCase();
+      if(!m)return err("Google n'a pas transmis d'adresse e-mail.");
+      let a=state.accounts.find(x=>x.email===m);
+      if(a){if(!a.photo&&g.photo)a.photo=g.photo;state.user=a;save();toast("Bon retour "+a.name+" !");return go("home")}
+      const p=(g.name||"").trim().split(/\s+/);
+      const u={name:p[0]||m.split("@")[0],lastName:p.slice(1).join(" "),email:m,photo:g.photo||"",google:true,birth:"",address:"",cp:"",phone:"",city:"",area:""};
+      state.accounts.push(u);state.user=u;save();toast("Compte créé. Complétez votre profil.");go("edit")
+    }catch(x){const c=x&&x.code;
+      if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return;
+      err(c==="cdm/not-configured"?"La connexion Google n'est pas encore activée sur ce site.":c==="auth/popup-blocked"?"Le navigateur a bloqué la fenêtre Google. Autorisez les pop-ups puis réessayez.":c==="auth/unauthorized-domain"?"Ce site n'est pas encore autorisé dans Firebase (domaines autorisés).":"La connexion Google a échoué. Réessayez.")
+    }finally{gb.disabled=false}};
   $("#f").onsubmit=async e=>{e.preventDefault();
     const m=$("#m").value.trim().toLowerCase(),pw=$("#pw").value;
     if(!/^\S+@\S+\.\S+$/.test(m))return err("Saisissez une adresse e-mail valide.");
@@ -448,6 +464,20 @@ render();
 const sp=$("#splash");let done=false;
 function hideSplash(){if(done)return;done=true;sp.classList.add("out");setTimeout(()=>sp.remove(),450)}
 sp.onclick=hideSplash;setTimeout(hideSplash,matchMedia("(prefers-reduced-motion:reduce)").matches?500:3200);
+</script>
+<script type="module">
+/* ====== CONFIGURATION FIREBASE : remplacez les valeurs vides par celles de votre projet ====== */
+const firebaseConfig={apiKey:"AIzaSyCYsTRNALY2DX5k4ZQEmEJCScAVL8iXkLM",authDomain:"coupdemain-553e4.firebaseapp.com",projectId:"coupdemain-553e4",storageBucket:"coupdemain-553e4.firebasestorage.app",messagingSenderId:"478076362548",appId:"1:478076362548:web:829a1ccb0717fa895e4f61"};
+/* =========================================================================================== */
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+let auth=null;
+window.cdmGoogle=async()=>{
+  if(!firebaseConfig.apiKey)throw {code:"cdm/not-configured"};
+  if(!auth)auth=getAuth(initializeApp(firebaseConfig));
+  const r=await signInWithPopup(auth,new GoogleAuthProvider());
+  return {email:r.user.email,name:r.user.displayName||"",photo:r.user.photoURL||""};
+};
 </script>
 </body>
 </html>
