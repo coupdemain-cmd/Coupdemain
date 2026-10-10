@@ -189,7 +189,7 @@ const cityOf=a=>a.city||(a.mine?(ucity(state.user)||homeCity()):AC[a.id]||"Paris
 const kmFrom=(a,c)=>dist(CITIES[locOf(a)],CITIES[c]);
 const km=a=>kmFrom(a,center());
 const RT={1:[4.8,23],2:[4.6,15],3:[5,8],4:[4.7,31],5:[4.9,42],6:[4.5,12],7:[4.4,9],8:[4.8,20],9:[4.7,6]};
-const myRate=id=>{const c=((state.user&&state.user.convs)||[]).find(x=>x.id===id);return c&&c.rating?c.rating:null};
+const myRate=id=>{const c=((state.user&&state.user.convs)||[]).find(x=>x.id===id||(x.remote&&x.adId===id));return c&&c.rating?c.rating:null};
 const rateOf=a=>{if(a.mine)return null;const b=RT[a.id]||[0,0],r=myRate(a.id),n=b[1]+(r?1:0);return n?{avg:(b[0]*b[1]+(r?r.stars:0))/n,n}:null};
 const starTxt=a=>{if(a.mine)return "";const r=rateOf(a);return r?` · <span class="rate"><span class="gold">★</span> ${r.avg.toFixed(1).replace(".",",")} (${r.n} avis)</span>`:" · Pas encore d'avis"};
 const $=s=>document.querySelector(s),main=$("#main");
@@ -197,7 +197,34 @@ const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 function save(){try{localStorage.setItem("cdm",JSON.stringify({user:state.user,mine:state.ads.filter(a=>a.mine),accounts:state.accounts}))}catch(e){}}
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
 function remine(){const em=(state.user&&state.user.email||"").toLowerCase();state.ads.forEach(a=>{if(a.owner!==undefined)a.mine=!!em&&String(a.owner).toLowerCase()===em})}
-function go(v){state.view=v;remine();render();window.scrollTo(0,0)}
+const meKey=()=>String(state.user&&(state.user.email||state.user.name)||"").toLowerCase();
+const isReal=a=>!!(a&&a.owner&&String(a.owner).toLowerCase()!==meKey());
+const convIdFor=a=>isReal(a)?a.id+"_"+meKey():a.id;
+let msgKey="",msgUnsub=null;
+function ensureMsgSub(){const k=state.user?meKey():"";if(k===msgKey)return;if(msgUnsub){msgUnsub();msgUnsub=null}msgKey="";if(!k||!window.cdmMsgs)return;msgKey=k;msgUnsub=window.cdmMsgs.subscribe(k,(l,init)=>window.cdmMsgIn(l,init))}
+window.cdmMsgIn=function(list,init){
+  const u=state.user;if(!u)return;const m=meKey();u.seen=u.seen||{};
+  const by={};list.forEach(x=>{(by[x.cid]=by[x.cid]||[]).push(x)});
+  const old={};(u.convs||[]).forEach(c=>{if(c.remote)old[c.id]=c});
+  const keep=(u.convs||[]).filter(c=>!c.remote),fresh=[];
+  const nc=Object.keys(by).map(id=>{
+    const arr=by[id].sort((a,b)=>a.t-b.t),last=arr[arr.length-1],first=arr[0];
+    const pm=arr.filter(x=>x.from!==m).pop(),peer=first.from===m?first.to:first.from;
+    const viewing=state.view==="chat"&&String(state.chatId)===id;
+    if(viewing)u.seen[id]=Date.now();
+    const ins=arr.filter(x=>x.from!==m),lastIn=ins[ins.length-1];
+    const unread=!!lastIn&&lastIn.t>(u.seen[id]||0);
+    const prevIn=old[id]?old[id].msgs.filter(x=>x.from==="them").length:0;
+    const who=pm?pm.fromName:first.toName;
+    if(!init&&ins.length>prevIn&&!viewing)fresh.push(who||"un voisin");
+    return {id:isNaN(+id)?id:id,adId:last.adId,remote:true,peer,who:who||peer,title:last.adTitle,cat:last.adCat,msgs:arr.map(x=>({from:x.from===m?"me":"them",text:x.text,t:x.t})),unread,rating:old[id]&&old[id].rating}
+  });
+  u.convs=keep.concat(nc);save();badge();
+  if(fresh.length&&u.notif!==false){toast("Nouveau message de "+fresh[0]);try{if("Notification" in window&&Notification.permission==="granted"&&document.hidden)new Notification("CoupDeMain",{body:"Nouveau message de "+fresh[0]})}catch(x){}}
+  if(state.view==="chat"&&state.drawChat&&document.getElementById("ms"))state.drawChat();
+  else if(state.view==="inbox")inbox();
+};
+function go(v){state.view=v;remine();ensureMsgSub();render();window.scrollTo(0,0)}
 function render(){
   setMe();
   if(!state.user&&!["welcome","profile"].includes(state.view))state.view="welcome";
@@ -231,7 +258,7 @@ function find(){
   <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="100" step="1" value="${state.radius}"></form>
   <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
   ${list.length?list.map(a=>`<article class="card"><div class="item"><div class="av" aria-hidden="true">${a.mine&&state.user&&state.user.photo?'<img src="'+state.user.photo+'" alt="">':EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${km(a)} km${starTxt(a)}</div></div></div>
-  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===a.id))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
+  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
   main.querySelectorAll(".chip[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;find()});
   const cq=$("#cq");if(cq)cq.onclick=()=>{state.q="";find()};
   $("#cf2").onsubmit=e=>{e.preventDefault();const n=norm($("#city").value),k=Object.keys(CITIES).find(c=>norm(c)===n);
@@ -242,7 +269,7 @@ function find(){
   $("#rad").onchange=e=>{state.radius=+e.target.value;find()};
   main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{
     if(!state.user){toast("Créez votre profil pour contacter quelqu'un");return go("profile")}
-    state.chatId=+b.dataset.id;go("chat")});
+    const ad=state.ads.find(x=>x.id===+b.dataset.id);state.chatId=ad?convIdFor(ad):+b.dataset.id;go("chat")});
 }
 function offer(){
   if(!state.user){main.innerHTML=`<h2 class="t">Proposer un service</h2><div class="card"><p>Créez votre profil pour publier une annonce.</p><button class="btn solid" id="p">Créer mon compte</button></div>`;$("#p").onclick=()=>go("profile");return}
@@ -427,31 +454,38 @@ function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&u.notif!==fal
 function inbox(){
   const u=state.user,cs=(u.convs||[]).slice().sort((a,b)=>b.msgs[b.msgs.length-1].t-a.msgs[a.msgs.length-1].t);
   main.innerHTML=`<h2 class="t">Messages</h2>${cs.length?cs.map(c=>{const l=c.msgs[c.msgs.length-1];return `<button class="card item rc" data-id="${c.id}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[c.cat]}</div><div><h3>${esc(c.who)}${c.unread?' <span class="price">Nouveau</span>':""}</h3><div class="meta">${esc(c.title)}</div><div class="meta">${esc((l.from==="me"?"Vous : ":"")+l.text.slice(0,60))}</div></div></button>`}).join(""):`<p class="empty">Aucune conversation pour le moment. Touchez « Contacter » sur une annonce pour écrire à un voisin.</p><button class="btn solid" id="gf" style="width:100%">Trouver de l'aide</button>`}`;
-  main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{state.chatId=+b.dataset.id;go("chat")});
+  main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const v=b.dataset.id;state.chatId=/^\d+$/.test(v)?+v:v;go("chat")});
   const g=$("#gf");if(g)g.onclick=()=>go("find");
 }
 function chat(){
-  const u=state.user,ad=state.ads.find(a=>a.id===state.chatId);
-  u.convs=u.convs||[];let c=u.convs.find(x=>x.id===state.chatId);
+  const u=state.user,cid=state.chatId,ad=state.ads.find(a=>a.id===parseInt(cid,10));
+  u.convs=u.convs||[];let c=u.convs.find(x=>x.id===cid);
   if(!ad&&!c)return go("inbox");
+  const real=!!(c&&c.remote)||!!(ad&&isReal(ad));
   const who=c?c.who:ad.who,title=c?c.title:ad.title,cat=c?c.cat:ad.cat,price=ad?ad.price:"";
-  if(c&&c.unread){c.unread=false;save()}
-  const draw=()=>{const ms=c?c.msgs:[],el=$("#ms");el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from}">${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.scrollTop=el.scrollHeight};
+  if(c&&c.unread)c.unread=false;if(c&&c.remote){u.seen=u.seen||{};u.seen[cid]=Date.now()}save();badge();
+  const cur=()=>u.convs.find(x=>x.id===cid)||c;
+  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from}">${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.scrollTop=el.scrollHeight};
   main.innerHTML=`<div class="chat"><div class="item" style="align-items:center;margin-bottom:8px"><button class="chip" id="bk" type="button" aria-label="Retour aux messages">←</button><div class="av" aria-hidden="true">${EMO[cat]}</div><div><h3>${esc(who)}</h3><div class="meta">${esc(title)}${price?" · "+esc(price):""}${ad?starTxt(ad):""}</div></div><button class="chip" id="rt" type="button" style="margin-left:auto">${c&&c.rating?"Modifier ma note":"Noter"}</button></div>
   <div id="rp" class="card" hidden></div>
   <div id="ms" class="ms" aria-live="polite"></div>
   <form id="mf" class="mf"><label for="mt" class="sr">Votre message</label><input id="mt" maxlength="300" autocomplete="off" placeholder="Écrire un message" value="${c?"":esc("Bonjour "+who+", votre annonce « "+title+" » m'intéresse. Êtes-vous disponible cette semaine ?")}"><button class="btn solid" type="submit">Envoyer</button></form>
-  <p class="note">Prototype : les réponses sont simulées. Le paiement se fait sur place : ne partagez jamais vos coordonnées bancaires.</p></div>`;
-  draw();
-  $("#bk").onclick=()=>go("inbox");
+  <p class="note">${real?"Messagerie en direct : votre correspondant reçoit vos messages et vous répond ici. ":"Prototype : les réponses sont simulées. "}Le paiement se fait sur place : ne partagez jamais vos coordonnées bancaires.</p></div>`;
+  draw();state.drawChat=draw;
+  $("#bk").onclick=()=>{state.drawChat=null;go("inbox")};
   let stars=c&&c.rating?c.rating.stars:0,txt=c&&c.rating?c.rating.text:"";
   const panel=()=>{$("#rp").innerHTML=`<h3>Votre avis sur ${esc(who)}</h3><div class="stars" role="group" aria-label="Note sur 5">${[1,2,3,4,5].map(i=>`<button type="button" class="star${i<=stars?" on":""}" data-s="${i}" aria-label="${i} étoile${i>1?"s":""}" aria-pressed="${i<=stars}">★</button>`).join("")}</div>
   <label for="rc" class="sr">Commentaire</label><textarea id="rc" rows="2" maxlength="200" placeholder="Un commentaire (facultatif)">${esc(txt)}</textarea>
   <div class="err" id="re" role="alert"></div><button class="btn solid" id="rs" type="button" style="width:100%">Publier mon avis</button>`;
     $("#rp").querySelectorAll(".star").forEach(b=>b.onclick=()=>{txt=$("#rc").value;stars=+b.dataset.s;panel()});
-    $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}c.rating={stars,text:$("#rc").value.trim()};save();toast("Merci pour votre avis !");chat()}};
-  $("#rt").onclick=()=>{if(!c){toast("Envoyez d'abord un message pour pouvoir noter.");return}const r=$("#rp");r.hidden=!r.hidden;if(!r.hidden)panel()};
+    $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}cur().rating={stars,text:$("#rc").value.trim()};save();toast("Merci pour votre avis !");chat()}};
+  $("#rt").onclick=()=>{if(!cur()){toast("Envoyez d'abord un message pour pouvoir noter.");return}const r=$("#rp");r.hidden=!r.hidden;if(!r.hidden)panel()};
   $("#mf").onsubmit=e=>{e.preventDefault();const t=$("#mt").value.trim();if(!t)return;
+    if(real){const peer=c&&c.peer?c.peer:String(ad.owner).toLowerCase();
+      if(!window.cdmMsgs){toast("Messagerie indisponible pour le moment");return}
+      $("#mt").value="";
+      window.cdmMsgs.send({cid:String(cid),adId:ad?ad.id:c.adId,adTitle:title,adCat:cat,from:meKey(),fromName:u.name||"",to:peer,toName:who||"",text:t,t:Date.now()}).catch(()=>toast("Message non envoyé : vérifiez la connexion et les règles Firestore"));
+      return}
     if(!c){c={id:state.chatId,who,title,cat,msgs:[],unread:false};u.convs.push(c)}
     c.msgs.push({from:"me",text:t,t:Date.now()});$("#mt").value="";save();draw();
     const n=c.msgs.filter(m=>m.from==="me").length,cc=c;
@@ -496,7 +530,7 @@ function welcome(){
   $("#li").onclick=()=>{state.authMode="login";go("profile")};
 }
 if(!state.user)state.view="welcome";
-render();window.addEventListener("cdm-ready",loadRemote);if(window.cdmAds)loadRemote();
+render();ensureMsgSub();window.addEventListener("cdm-ready",()=>{loadRemote();ensureMsgSub()});if(window.cdmAds)loadRemote();
 const sp=$("#splash");let done=false;
 function hideSplash(){if(done)return;done=true;sp.classList.add("out");setTimeout(()=>sp.remove(),450)}
 sp.onclick=hideSplash;setTimeout(hideSplash,matchMedia("(prefers-reduced-motion:reduce)").matches?500:3200);
@@ -515,6 +549,12 @@ window.cdmAds={
   publish:ad=>setDoc(doc(db,"ads",String(ad.id)),{id:ad.id,cat:ad.cat,title:ad.title,desc:ad.desc,price:ad.price,who:ad.who,area:ad.area||"",city:ad.city||"",loc:ad.loc||"",owner:(ad.owner||"").toLowerCase(),created:Date.now()}),
   subscribe:cb=>{if(unsub)unsub();unsub=onSnapshot(collection(db,"ads"),snap=>{window.cdmRemoteOk=true;cb(snap.docs.map(d=>d.data()).filter(a=>a&&a.id))},()=>{window.cdmRemoteOk=false})},
   removeMine:async email=>{try{const q=await getDocs(query(collection(db,"ads"),where("owner","==",String(email||"").toLowerCase())));await Promise.all(q.docs.map(d=>deleteDoc(d.ref)))}catch(e){}}
+};
+window.cdmMsgs={
+  send:m=>setDoc(doc(db,"msgs",m.t+"_"+Math.random().toString(36).slice(2,8)),m),
+  subscribe:(me,cb)=>{const A=new Map(),B=new Map();let loaded=0;
+    const mk=(f,M)=>onSnapshot(query(collection(db,"msgs"),where(f,"==",me)),s=>{const init=loaded<2;if(init)loaded++;M.clear();s.docs.forEach(d=>M.set(d.id,d.data()));cb([...new Map([...A,...B]).values()],init)},()=>{});
+    const u1=mk("to",A),u2=mk("from",B);return()=>{u1();u2()}}
 };
 window.dispatchEvent(new Event("cdm-ready"));
 window.cdmGoogle=async()=>{
