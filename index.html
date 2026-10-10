@@ -105,8 +105,8 @@ body.gate nav,body.gate .me{display:none}
 .row2{display:flex;flex-wrap:wrap;gap:8px}
 .sr{position:absolute;left:-9999px}
 .chat{display:flex;flex-direction:column}
-.ms{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:52vh;min-height:30vh;padding:8px 2px}
-.bub{max-width:82%;padding:10px 14px;border-radius:18px;background:var(--card);border:1px solid var(--line);overflow-wrap:anywhere}
+.ms{display:flex;flex-direction:column;gap:8px;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:52vh;min-height:30vh;padding:8px 2px}
+.bub{flex:none;width:fit-content;max-width:82%;padding:10px 14px;border-radius:18px;background:var(--card);border:1px solid var(--line);overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}
 .bub small{display:block;font-size:11px;opacity:.65;margin-top:2px}
 .bub.me{align-self:flex-end;background:var(--g1);color:#fff;border-color:var(--g1)}
 .bub.them{align-self:flex-start}
@@ -165,12 +165,15 @@ ads:[
 {id:9,cat:"Jardinage",title:"Entretien de jardin",who:"Hugo",area:"Centre",price:"60 € le forfait",desc:"Tonte, désherbage et taille des arbustes pour un prix fixe."}],
 sent:[],accounts:[],authMode:"login",radius:25,q:""};
 try{const s=JSON.parse(localStorage.getItem("cdm")||"null");if(s&&s.user)state.user=s.user;if(s&&s.mine)state.ads=state.ads.concat(s.mine.map(a=>Object.assign({},a,{owner:a.owner||(s.user&&s.user.email)||""})));if(s&&s.accounts)state.accounts=s.accounts}catch(e){}
-const SEED=state.ads.filter(a=>a.id<100);
+const SHOW_DEMO=false;
+const SEED=SHOW_DEMO?state.ads.filter(a=>a.id<100):[];
+if(!SHOW_DEMO)state.ads=state.ads.filter(a=>a.id>=100);
+const vis=c=>SHOW_DEMO||c.remote;
 window.cdmMerge=function(remote){
   const em=(state.user&&state.user.email||"").toLowerCase(),map=new Map();
   SEED.forEach(a=>map.set(a.id,a));
-  const mig=state.ads.filter(a=>a.id>=100&&a.mine&&a.owner&&!remote.some(r=>r.id===a.id));mig.forEach(a=>{map.set(a.id,a);if(window.cdmAds&&!a.sync){a.sync=1;window.cdmAds.publish(a).catch(()=>{a.sync=0})}});
-  remote.forEach(r=>{r.mine=!!em&&String(r.owner||"").toLowerCase()===em;map.set(r.id,r)});
+  const mig=state.ads.filter(a=>a.id>=100&&a.mine&&a.owner&&!a.sync&&!remote.some(r=>r.id===a.id));mig.forEach(a=>{map.set(a.id,a);if(window.cdmAds&&!a.sync){a.sync=1;window.cdmAds.publish(a).catch(()=>{a.sync=0})}});
+  remote.forEach(r=>{r.sync=1;r.mine=!!em&&String(r.owner||"").toLowerCase()===em;map.set(r.id,r)});
   state.ads=[...map.values()].sort((x,y)=>y.id-x.id);
   if(["find","home","profile"].includes(state.view)&&state.user)render();
 };
@@ -186,7 +189,16 @@ const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/-/g," "
 const dist=(p,q)=>{const r=Math.PI/180,dl=(q[0]-p[0])*r,dn=(q[1]-p[1])*r,x=Math.sin(dl/2)**2+Math.cos(p[0]*r)*Math.cos(q[0]*r)*Math.sin(dn/2)**2;return Math.round(12742*Math.asin(Math.sqrt(x)))};
 const locOf=a=>a.loc&&CITIES[a.loc]?a.loc:(a.mine?homeCity():AC[a.id]||"Paris");
 const cityOf=a=>a.city||(a.mine?(ucity(state.user)||homeCity()):AC[a.id]||"Paris");
-const kmFrom=(a,c)=>dist(CITIES[locOf(a)],CITIES[c]);
+const adPt=a=>a.lat!=null&&a.lon!=null?[+a.lat,+a.lon]:CITIES[locOf(a)];
+const kmFrom=(a,c)=>{const u=state.user,p=(u&&u.geo&&u.geoPos&&c===baseCity())?u.geoPos:CITIES[c];return dist(adPt(a),p)};
+function setGeo(pos){const u=state.user;if(!u)return false;const p=[+pos.coords.latitude.toFixed(4),+pos.coords.longitude.toFixed(4)];let best="",bd=1e9;
+  Object.keys(CITIES).forEach(c=>{const d=dist(p,CITIES[c]);if(d<bd){bd=d;best=c}});
+  const moved=!u.geoPos||dist(p,u.geoPos)>=1;u.geo=true;u.geoPos=p;u.geoCity=best;
+  if(moved){u.geoName=best;save();revGeo(p)}return moved}
+function revGeo(p){try{fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=fr&lat="+p[0]+"&lon="+p[1]).then(r=>r.json()).then(j=>{const a=j.address||{},n=a.city||a.town||a.village||a.municipality||a.county;if(n&&state.user&&state.user.geo){state.user.geoName=n;save();if(state.view==="profile")profile()}}).catch(()=>{})}catch(e){}}
+function refreshGeo(){const u=state.user;if(!u||!u.geo||!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(pos=>{if(setGeo(pos)&&["home","find"].includes(state.view))render()},()=>{},{enableHighAccuracy:true,timeout:15000,maximumAge:60000})}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshGeo()});
 const km=a=>kmFrom(a,center());
 const RT={1:[4.8,23],2:[4.6,15],3:[5,8],4:[4.7,31],5:[4.9,42],6:[4.5,12],7:[4.4,9],8:[4.8,20],9:[4.7,6]};
 const myRate=id=>{const c=((state.user&&state.user.convs)||[]).find(x=>x.id===id||(x.remote&&x.adId===id));return c&&c.rating?c.rating:null};
@@ -206,7 +218,7 @@ window.cdmMsgIn=function(list,init){
   const u=state.user;if(!u)return;const m=meKey();u.seen=u.seen||{};
   const by={};list.forEach(x=>{(by[x.cid]=by[x.cid]||[]).push(x)});
   const old={};(u.convs||[]).forEach(c=>{if(c.remote)old[c.id]=c});
-  const keep=(u.convs||[]).filter(c=>!c.remote),fresh=[];
+  const keep=(u.convs||[]).filter(c=>!c.remote&&SHOW_DEMO),fresh=[];
   const nc=Object.keys(by).map(id=>{
     const arr=by[id].sort((a,b)=>a.t-b.t),last=arr[arr.length-1],first=arr[0];
     const pm=arr.filter(x=>x.from!==m).pop(),peer=first.from===m?first.to:first.from;
@@ -235,7 +247,7 @@ function render(){
   badge();
 }
 function home(){
-  const u=state.user,sent=(u.convs||[]).length,mine=state.ads.filter(a=>a.mine).length,kh=a=>kmFrom(a,baseCity()),recent=state.ads.filter(a=>!a.mine&&kh(a)<=state.radius).sort((x,y)=>kh(x)-kh(y)).slice(0,3);
+  const u=state.user,sent=(u.convs||[]).filter(vis).length,mine=state.ads.filter(a=>a.mine).length,kh=a=>kmFrom(a,baseCity()),recent=state.ads.filter(a=>!a.mine&&kh(a)<=state.radius).sort((x,y)=>kh(x)-kh(y)).slice(0,3);
   main.innerHTML=`<h2 class="t" style="margin-bottom:4px">Bonjour ${esc(u.name)}</h2>
   <p class="meta" style="margin:0 0 14px">Que cherchez-vous aujourd'hui ?</p>
   <form id="sf" role="search"><label for="q" class="sr">Rechercher un service</label><input id="q" type="search" placeholder="Jardinage, bricolage, courses…" maxlength="40"></form>
@@ -258,13 +270,15 @@ function find(){
   <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="100" step="1" value="${state.radius}"></form>
   <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
   ${list.length?list.map(a=>`<article class="card"><div class="item"><div class="av" aria-hidden="true">${a.mine&&state.user&&state.user.photo?'<img src="'+state.user.photo+'" alt="">':EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${km(a)} km${starTxt(a)}</div></div></div>
-  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
+  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span><button class="chip" type="button" data-del="'+a.id+'">Supprimer</button>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
   main.querySelectorAll(".chip[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;find()});
   const cq=$("#cq");if(cq)cq.onclick=()=>{state.q="";find()};
   $("#cf2").onsubmit=e=>{e.preventDefault();const n=norm($("#city").value),k=Object.keys(CITIES).find(c=>norm(c)===n);
     if(!k){$("#ce").textContent="Ville inconnue dans ce prototype. Choisissez-en une dans la liste proposée.";return}
     state.center=k;find()};
   const hm=$("#hm");if(hm)hm.onclick=()=>{state.center=null;find()};
+  main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Supprimer cette annonce pour tout le monde ?"))return;const id=+b.dataset.del;
+    state.ads=state.ads.filter(x=>x.id!==id);save();if(window.cdmAds)window.cdmAds.remove(id).catch(()=>toast("Suppression en ligne impossible : vérifiez la connexion"));toast("Annonce supprimée");find()});
   $("#rad").oninput=e=>{$("#rv").textContent=e.target.value+" km"};
   $("#rad").onchange=e=>{state.radius=+e.target.value;find()};
   main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{
@@ -286,7 +300,8 @@ function offer(){
     if(!t||!d){$("#e").textContent="Renseignez le titre et la description.";return}
     if(ty!=="g"&&!(n>=1&&n<=9999)){$("#e").textContent="Indiquez un montant en euros, entre 1 et 9999.";return}
     const p=ty==="g"?"Gratuit":String(Math.round(n*100)/100).replace(".",",")+(ty==="h"?" €/h":" € le forfait");
-    const ad={id:Date.now(),cat:$("#cat").value,title:t,desc:d,price:p,who:state.user.name,area:ucity(state.user),city:ucity(state.user)||homeCity(),loc:homeCity(),owner:state.user.email||"",mine:true};
+    const ad={id:Date.now(),cat:$("#cat").value,title:t,desc:d,price:p,who:state.user.name,area:ucity(state.user),city:(state.user.geo&&(state.user.geoName||state.user.geoCity))||ucity(state.user)||homeCity(),loc:state.user.geo&&state.user.geoCity?state.user.geoCity:homeCity(),owner:state.user.email||"",mine:true};
+    if(state.user.geo&&state.user.geoPos){ad.lat=Math.round(state.user.geoPos[0]*100)/100;ad.lon=Math.round(state.user.geoPos[1]*100)/100}
     state.ads.unshift(ad);save();state.filter="Tous";
     if(window.cdmAds){window.cdmAds.publish(ad).then(()=>toast("Annonce publiée : tout le monde peut la voir")).catch(()=>toast("Annonce enregistrée sur votre appareil seulement (connexion à la base impossible)"))}else toast("Annonce enregistrée sur votre appareil seulement");
     go("find")};
@@ -297,22 +312,19 @@ function profile(){
     <div class="card"><h3>Mes informations</h3><p class="meta">${esc(state.user.name)} ${esc(state.user.lastName||"")}<br>${esc(state.user.email||"")}<br>${esc(state.user.phone||"")}<br>${esc(state.user.address||"")}, ${esc(state.user.cp||"")} ${esc(ucity(state.user))}${state.user.birth?"<br>Né(e) le "+new Date(state.user.birth+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}</p></div>
     <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<p>${EMO[a.cat]} ${esc(a.title)} <span class="meta">· ${esc(a.price)}</span></p>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
     <div class="card"><h3>Paramètres</h3>
-    <label class="set" for="sg" style="margin:0;font-weight:400"><span><b>Localisation</b><small>${state.user.geo&&state.user.geoCity?"Active · position proche de "+esc(state.user.geoCity):"Utiliser ma position pour trouver les annonces autour de moi"}</small></span><input type="checkbox" class="sw" id="sg" role="switch" ${state.user.geo?"checked":""}></label>
+    <label class="set" for="sg" style="margin:0;font-weight:400"><span><b>Localisation</b><small>${state.user.geo&&state.user.geoCity?"Active · position du téléphone : "+esc(state.user.geoName||state.user.geoCity):"Utiliser la position de votre téléphone pour trouver les annonces autour de vous"}</small></span><input type="checkbox" class="sw" id="sg" role="switch" ${state.user.geo?"checked":""}></label>
     <label class="set" for="sn" style="margin:0;font-weight:400"><span><b>Notifications</b><small>Alertes pour les nouveaux messages</small></span><input type="checkbox" class="sw" id="sn" role="switch" ${state.user.notif!==false?"checked":""}></label></div>
     <button class="btn solid" id="out" style="width:100%">Se déconnecter</button><button class="btn" id="rm" style="width:100%;margin-top:8px;background:transparent;color:var(--err);border:1px solid var(--err)">Supprimer mon compte</button>`;
     $("#sn").onchange=e=>{const u=state.user;u.notif=e.target.checked;save();badge();
       if(u.notif&&"Notification" in window&&Notification.permission==="default")try{Notification.requestPermission()}catch(x){}
       toast(u.notif?"Notifications activées":"Notifications désactivées")};
     $("#sg").onchange=e=>{const u=state.user,sw=e.target;
-      if(!sw.checked){u.geo=false;u.geoCity="";state.center=null;save();toast("Localisation désactivée");return profile()}
+      if(!sw.checked){u.geo=false;u.geoCity="";u.geoPos=null;u.geoName="";state.center=null;save();toast("Localisation désactivée");return profile()}
       if(!navigator.geolocation){sw.checked=false;return toast("La localisation n'est pas disponible sur cet appareil")}
       toast("Recherche de votre position…");
-      navigator.geolocation.getCurrentPosition(pos=>{
-        const p=[pos.coords.latitude,pos.coords.longitude];let best="",bd=1e9;
-        Object.keys(CITIES).forEach(c=>{const d=dist(p,CITIES[c]);if(d<bd){bd=d;best=c}});
-        u.geo=true;u.geoCity=best;state.center=null;save();toast("Localisation activée : "+best);profile()},
-      err=>{sw.checked=false;toast(err&&err.code===1?"Autorisez la localisation dans les réglages du navigateur":"Position introuvable, réessayez")},
-      {enableHighAccuracy:false,timeout:10000,maximumAge:600000})};
+      navigator.geolocation.getCurrentPosition(pos=>{setGeo(pos);state.center=null;save();toast("Localisation activée : "+(u.geoName||u.geoCity));profile()},
+      err=>{sw.checked=false;toast(err&&err.code===1?"Position refusée : réglages iPhone > Confidentialité > Service de localisation > Safari":"Position introuvable, réessayez dehors ou avec le GPS activé")},
+      {enableHighAccuracy:true,timeout:15000,maximumAge:0})};
     $("#ph").onclick=()=>go("photo");
     $("#ed").onclick=()=>go("edit");
     $("#rm").onclick=()=>go("delAcc");
@@ -450,9 +462,9 @@ function delAcc(){
 }
 const REPLIES=["Bonjour ! Oui, je suis disponible. Quel jour vous arrangerait ?","Très bien, ça me convient. On se met d'accord sur le tarif sur place ?","Parfait, à bientôt !"];
 const hh=t=>new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&u.notif!==false&&(u.convs||[]).some(c=>c.unread))}
+function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&u.notif!==false&&(u.convs||[]).filter(vis).some(c=>c.unread))}
 function inbox(){
-  const u=state.user,cs=(u.convs||[]).slice().sort((a,b)=>b.msgs[b.msgs.length-1].t-a.msgs[a.msgs.length-1].t);
+  const u=state.user,cs=(u.convs||[]).filter(vis).sort((a,b)=>b.msgs[b.msgs.length-1].t-a.msgs[a.msgs.length-1].t);
   main.innerHTML=`<h2 class="t">Messages</h2>${cs.length?cs.map(c=>{const l=c.msgs[c.msgs.length-1];return `<button class="card item rc" data-id="${c.id}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[c.cat]}</div><div><h3>${esc(c.who)}${c.unread?' <span class="price">Nouveau</span>':""}</h3><div class="meta">${esc(c.title)}</div><div class="meta">${esc((l.from==="me"?"Vous : ":"")+l.text.slice(0,60))}</div></div></button>`}).join(""):`<p class="empty">Aucune conversation pour le moment. Touchez « Contacter » sur une annonce pour écrire à un voisin.</p><button class="btn solid" id="gf" style="width:100%">Trouver de l'aide</button>`}`;
   main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const v=b.dataset.id;state.chatId=/^\d+$/.test(v)?+v:v;go("chat")});
   const g=$("#gf");if(g)g.onclick=()=>go("find");
@@ -530,7 +542,7 @@ function welcome(){
   $("#li").onclick=()=>{state.authMode="login";go("profile")};
 }
 if(!state.user)state.view="welcome";
-render();ensureMsgSub();window.addEventListener("cdm-ready",()=>{loadRemote();ensureMsgSub()});if(window.cdmAds)loadRemote();
+render();ensureMsgSub();refreshGeo();window.addEventListener("cdm-ready",()=>{loadRemote();ensureMsgSub()});if(window.cdmAds)loadRemote();
 const sp=$("#splash");let done=false;
 function hideSplash(){if(done)return;done=true;sp.classList.add("out");setTimeout(()=>sp.remove(),450)}
 sp.onclick=hideSplash;setTimeout(hideSplash,matchMedia("(prefers-reduced-motion:reduce)").matches?500:3200);
@@ -546,8 +558,9 @@ const app=initializeApp(firebaseConfig),db=getFirestore(app);
 let auth=null,unsub=null;
 /* ====== ANNONCES PARTAGÉES (Firestore, collection "ads") ====== */
 window.cdmAds={
-  publish:ad=>setDoc(doc(db,"ads",String(ad.id)),{id:ad.id,cat:ad.cat,title:ad.title,desc:ad.desc,price:ad.price,who:ad.who,area:ad.area||"",city:ad.city||"",loc:ad.loc||"",owner:(ad.owner||"").toLowerCase(),created:Date.now()}),
+  publish:ad=>setDoc(doc(db,"ads",String(ad.id)),{id:ad.id,cat:ad.cat,title:ad.title,desc:ad.desc,price:ad.price,who:ad.who,area:ad.area||"",city:ad.city||"",loc:ad.loc||"",lat:ad.lat==null?null:ad.lat,lon:ad.lon==null?null:ad.lon,owner:(ad.owner||"").toLowerCase(),created:Date.now()}),
   subscribe:cb=>{if(unsub)unsub();unsub=onSnapshot(collection(db,"ads"),snap=>{window.cdmRemoteOk=true;cb(snap.docs.map(d=>d.data()).filter(a=>a&&a.id))},()=>{window.cdmRemoteOk=false})},
+  remove:id=>deleteDoc(doc(db,"ads",String(id))),
   removeMine:async email=>{try{const q=await getDocs(query(collection(db,"ads"),where("owner","==",String(email||"").toLowerCase())));await Promise.all(q.docs.map(d=>deleteDoc(d.ref)))}catch(e){}}
 };
 window.cdmMsgs={
