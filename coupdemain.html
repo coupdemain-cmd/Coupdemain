@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12392a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CoupDeMain">
+<meta name="application-name" content="CoupDeMain">
+<meta name="description" content="CoupDeMain : trouvez un coup de main près de chez vous, ou partagez vos compétences.">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAADAFBMVEX///8iXkMbTjgjYUUgWkAfVz4cUTq22sgfWD8eVT0aSzYdUjsaTDckY0YkZEchXUIZSTUlZkgcUDknaksXRTIiX0QbTzkjYEQeVj0gWUAeVDwgW0EdVDwdUzwhW0EmZ0kYSDQdUzshXEEhXEIYRzMmaEoWQjAobU0ZSjaGvaMZSjUlZUglZUfP4NYeVj4gWT/ztj8obEwWQzEmaUoYRjMcUDoiX0MVQC8pb04bTTgjYkUna0wXRDEaTTckYkYVQS8pbk4ZSDQlZ0kmaEkYRzQnaUoXRjMVPy4pcE8fVj4fWT8na0sXRDIqclAUPS0rc1EcUjsUPi0qcVAcTzkiXUITPCwiYEQbTzgjYEUobk0WQTAbTTcjYkYZSTQlZkkXRjInaUsTOisqcE8UPy4SOSoUPi4qcU8WRDEoa0wWQzAobE0rdFIVQC4pb0/w8/Lx9vOm0bydy7WlurHm7+oqclEUPSwsdVITOys8bFc7alWs0cCs0b/A4NArdVK02MZShG35+/r9/f1Thm5ShW71+PaSvai93s5TiG8rZUuXwKw5dFmAdjQYPCxLgGd0o409blmXraRxkYIdPyururRbgXBck3nP59urwbZminoxbFE0b1St08Cx1sS63MuBnZHm7OnEz8rW3trH1c5wh347Ty3fqz3V6uBjl35Be2B7qZPN3tTI49ZVjnRvoImesqnc4+Drsj6chTcgRTavkThZdGpEVS9Shm57s5iSr6F4lohln4Te7uYvXkmPq52EsZstak5NhmzU5t2q0L2ItKBJeWOBrpg6YlJRdGYpTD+Vpp+0xL1nf3aNoprR2NWNfTWhiTh4cjNNal/usz8aQDHnrz0nY0i/0MeexbIkVkGDuqBEbFs3cVahyrZHcl8nW0UnYEbc6uTs9fHu8fDO19Tr7+3j6ObWpjxiZTE1V0qwvbjInjuUgTYdQjNQWzC7xsIuSC1IZltnaTIrRyzBmjptpYqly7gnZUiLtqElSTsmRSwZPjBgZDImSTxOfWckRTElYEXrPxdeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAHaElEQVR42tXbeVRVRRwH8B9pPSvFzEzDLTVTFI1SybXc09Qsl1JbyastlpSVaOoTChDZZJUlZBMCDdAQFXfLfd/3fcl9Sa1s+6OZufe94L793uc5fL//cDmc897nzRl+M/MbIInFnyVQZLjIV6/wvMYyZszo0S+xfPI8z4sso0Y9LfLRcywfdO3adeDAx0Te7du3ffv2T7H07v0kS48ebz/C06pVq5YtWz4kUl2kW7c3O3W6T+SNx1mGPsrSocMDIq8+zNOkSZOGDRs2aNDAy8vrQZF69eq1bdv/fp5qBGjmaDgzQ+OZqxGgWaDRzBwNZ36ZAM3PEKBZQWOZnyBAs0CjmTkazlyVAM1VCdCsoLHMMhrMLNBoZo6GM9cnQHN9AjTXJ0BzIwI0CzSamaPhzE0J0NyUAM0CjWZuRoBmhsYzNyNAc00CNNckQDND45lrEqBZoNHMwwjQ7EGAZg8CNHsQoFlGg5kFGs3M0XBmPwI0+xGguQ4BmjkazszQeOY6BGh+nQDNdQnQrKCxzDIazCzQaOYRBGiuQoDmKgRorkKAZoFGM3M0nJmh8cydCdDcmQDNbxGg+QUCNL9AgOYaBGiuQYBmBY1lltGVynwq/IADs0BXIrPHjKXe3t5Lkw7YM3N0ZRrnJG85v9W1Y/Yk95lXxpVNsJVVKSedMYd7m1Jgx+xJ7jL3jw0iexlfNr1cvhVZsmTJN6bM4Mk3o/PDbZs9yU3mw1nkKCsMDvOZGf25MTQ/1YaZod0zN4rJcWa7gmbfpRetsWr2JPeYJwc7gQ5xEc2+L7Bm5mh75knLyspWxa10WDcyyJn84CrakF5oxexDds0p89vw5Kx3VOuSnUL/5DLaYFxrafYhe+aNsrlNm4NeDurzVqfQ37uONkyJsDALtM35nNLGlBMO1pRYp9CzNaANoRbm1mTL3GlTbE62GZ053n5CnDEHz9GCNqxVmxnaqnnoskz2Ll+Y0QHkShZcLr4hf4zsCROygpwv1FbRoWpza7JqPrpAvIs2dPYe/i+w1zKCKGcjf/pzi1wPA+ZoQxvTVOZaZM2cqBg1obP2SbmRO2/FS5sSoqTFkTsvRknbuPrMHIM2tCFJZa5F1symlUIL+nyJ/1VflrzFkn/ULv50IVfaThTkhNkGep7KLNAq82SzUAt6rhTpK5IXb3q6EH/tPBtpzeh1KjNHq8zVz5EOdFBJ/EKZ6ntduqI87ZZinanSttAzVWaGVte6FNKDzpIuKlLfRbf2Kk9XpFJyaoJYR4eqzO+QxZqSrQtdLO30tcjewEtOLYg20KtV5p6kNm8kXegt0o+WaN/4zfxnZzSiY1TmnqReuzPuHZrCtKGjVebGpN5vJOhDXzaVjPLJk37VuDXl+a6xyiyjy+/5D+pDZ0vXLdGLpLnaN0yGeWqzQFc4p2TrQwdvjlpogd4tJWjemhrSj6nNHF3xbJWlD80WF4tJvfCvv89qH+kiC3MvUp8Hk3Wid0i5avQuaRtpntOhfSzMvUh9ht2uE017pF2qgb7pv4O0Vo/jqZbm5qQ+dx/Viz4XeHt/BXSkaaADXK/TM9OsmBla3Sv4RSeazep/ypvvRJUoL3naVbQxprE1c3Oy6G8s04sOuSRdLVejbyqlg4LDXEMbV0f4WDVztKonM3SBTjTt2Oe/yGTen6vUaNZAmFIxX1vmuBkduqFwjY8Nczuy7CNtCtKJphtRUYp6/2KpVHm50+vuFqU56PNHmNGF6v1GOXM7stL7itOLpoThgaJa5+VKe5SDegifHOkz7N9N/LFUMR9Js2NW0Kp+XUawTjRt3ee/e6/vndtSqWIOmCofUiPs36cUHJHRa+2Z+5DVHmPiWZ1oyvmXHWoDpTjl4883/RLOc3Cfklq4fPnypAi7ZoG20hc9vCpEH5oyWSOhRKkbIbNDzUcnB3dA6jOsNfN7ZKuXuzJua2amDjQFby/ldSg4ZAVbvY3mVdkN5tpkr/8cZ0anTC6XSRUy6/+sD5sqx6B8nRpmOhea1EVuMNcmez3zWaauac5J5+6t7prG07yvNG+KldVjjRvMCtpWzzxDNs9PdPKuLe1neeKuN7cslK+H/GL4WB+KcIdZRtvu8ycWJycnl51w+n4wdXW6YUrMqaobZOuGVPlTGKOHeaQl5UePcItZoN16pzksvBG7H/TgA2uMqdvs2Exm/j3a8X23C2aOvjf3sOHR0eHiTjNieoGfe80DqHL8XYFL5gEEaO5CgOYuBGjuQoDmDwnQ/CwBmhU0lllGg5kFGs38MQGaWxCguQUBmlsQoFmg0cwcDWdmaDzzSAI0jyRAc3cCNHM0nJmh8czdCdDckQDNHQnQrKCxzDIazCzQaOZPCdDcjwDN/QjQ3I8AzTIazPw+AZo5Gs48lgDNYwnQPIQAzQyNZx5CgGaOhjMPIkDzIAI0czScmaHxzIMI0PwlAZoHE6B5MAGaFTSWWUaDmQUazczRcOZxBGgeR4BmjoYzMzSeeRwBmhkazzyNAM3TCNA8kQDNAo1m5mg4M0PjmScSoHnif9ugPaHhT158AAAAAElFTkSuQmCC">
+<title>CoupDeMain – L'entraide près de chez vous</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap">
+<style>
+:root{--bg:#f4f6f3;--card:#fff;--ink:#17261f;--mute:#5d6e65;--g1:#24503c;--g2:#3f7d62;--mint:#dcebe2;--gold:#f0b429;--line:#dfe6e1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221d;--ink:#eaf2ed;--mute:#9bb0a5;--mint:#1f3329;--line:#2a3a32}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding:16px 16px 96px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--g1),var(--g2));display:grid;place-items:center;font-size:26px}
+header h1{font-size:20px;margin:0;line-height:1.1}header small{color:var(--mute)}
+.me{margin-left:auto;border:0;background:var(--mint);color:var(--ink);width:44px;height:44px;border-radius:50%;font-size:18px;cursor:pointer}
+.hero{background:linear-gradient(150deg,var(--g1),var(--g2));color:#fff;border-radius:28px;padding:28px 24px}
+.hero h2{font-size:32px;line-height:1.1;margin:0 0 12px;letter-spacing:-.5px}
+.hero p{margin:0 0 20px;opacity:.92}
+button,.btn{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:16px;padding:14px 20px;font-weight:700;background:#fff;color:var(--g1);min-height:48px}
+.btn.solid{background:var(--g1);color:#fff}
+.btn.gold{background:var(--gold);color:#2b2100}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.tab:focus-visible,.chip:focus-visible,.tile:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;text-align:left;color:var(--ink)}
+.tile b{display:block;font-size:18px;margin:6px 0 4px;line-height:1.2}.tile span{color:var(--mute);font-size:14px}
+.tile i{font-style:normal;font-size:28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:18px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:12px;align-items:center;padding:6px 0}
+.steps li:before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:var(--mint);display:grid;place-items:center;font-weight:700;font-size:14px}
+.note{text-align:center;color:var(--mute);font-size:13px;margin:16px 0}
+h2.t{font-size:24px;margin:8px 0 12px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;min-height:40px}
+.chip[aria-pressed=true]{background:var(--g1);color:#fff;border-color:var(--g1)}
+.item{display:flex;gap:14px}
+.av{flex:none;width:48px;height:48px;border-radius:50%;background:var(--mint);display:grid;place-items:center;font-size:22px}
+.item h3{margin:0;font-size:17px}.meta{color:var(--mute);font-size:14px}
+.price{font-weight:700;color:var(--g1)}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .price{color:var(--gold)}}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px}
+label{display:block;font-weight:700;margin:14px 0 6px}
+input,select,textarea{width:100%;font:inherit;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.err{color:var(--err);font-size:14px;min-height:20px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;gap:4px}
+.tab{flex:1;max-width:120px;border:0;background:none;color:var(--mute);padding:6px;border-radius:14px;font-size:12px;min-height:52px}
+.tab span{display:block;font-size:22px}.tab[aria-current=page]{color:var(--g1);background:var(--mint);font-weight:700}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;z-index:9;max-width:90%}
+.empty{text-align:center;color:var(--mute);padding:24px}
+#splash{position:fixed;inset:0;z-index:20;background:linear-gradient(150deg,var(--g1),var(--g2));display:grid;place-content:center;justify-items:center;gap:14px;color:#fff;transition:opacity .4s;cursor:pointer}
+#splash.out{opacity:0;pointer-events:none}
+#splash svg{width:min(260px,72vw);height:auto;overflow:visible;filter:drop-shadow(0 8px 14px rgba(0,0,0,.28))}
+#splash b{font-size:28px;letter-spacing:-.5px}
+#splash small{opacity:.85}
+@media (prefers-reduced-motion:no-preference){#splash .hl{animation:inL .7s cubic-bezier(.2,.8,.2,1) .1s both}#splash .hr{animation:inR .7s cubic-bezier(.2,.8,.2,1) .1s both}#splash .hands{transform-box:fill-box;transform-origin:center;animation:clasp .5s ease-in-out .85s 1}#splash .heart{transform-box:fill-box;transform-origin:center;animation:pop .6s cubic-bezier(.2,1.6,.4,1) 1.1s both,beat .9s ease-in-out 1.75s 2}#splash .ring{transform-box:fill-box;transform-origin:center;animation:ring .9s ease-out 1.1s both}#splash b,#splash small{animation:fade .6s 1.4s both}@keyframes inL{from{transform:translateX(-90px);opacity:0}}@keyframes inR{from{transform:translateX(90px);opacity:0}}@keyframes clasp{30%{transform:translateY(-4px) rotate(-2deg)}60%{transform:translateY(3px) rotate(2deg)}}@keyframes pop{from{transform:scale(0);opacity:0}}@keyframes beat{50%{transform:scale(1.18)}}@keyframes ring{from{transform:scale(.3);opacity:.7}to{transform:scale(2.4);opacity:0}}@keyframes fade{from{opacity:0;transform:translateY(8px)}}}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .25s ease}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+:root{--bg:#f5f7f4;--g1:#12392a;--g2:#2c7653;--gold:#f3b63f;--sh:0 1px 2px rgba(18,57,42,.06),0 10px 28px -10px rgba(18,57,42,.14);--r:20px}
+body{font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;letter-spacing:-.01em}
+.app{padding:0 16px 112px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:0 -16px 16px;padding:12px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.logo{width:40px;height:40px;border-radius:12px;font-size:22px;box-shadow:0 6px 14px -4px rgba(18,57,42,.45)}
+header h1{font-size:18px;font-weight:800;letter-spacing:-.02em}header small{font-size:12.5px}
+.me{width:40px;height:40px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--g1)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .me{color:var(--gold)}}
+.hero{position:relative;overflow:hidden;padding:32px 24px 28px;background:radial-gradient(120% 90% at 100% 0%,rgba(243,182,63,.28),transparent 55%),linear-gradient(155deg,var(--g1),var(--g2));box-shadow:0 20px 40px -18px rgba(18,57,42,.6)}
+.hero h2{font-size:34px;font-weight:800;line-height:1.08;letter-spacing:-.03em}
+.hero p{max-width:30ch}
+.btn{border-radius:14px;transition:transform .12s}.btn:active{transform:scale(.97)}
+.hero .btn{background:var(--gold);color:#2b2100;box-shadow:0 10px 22px -8px rgba(0,0,0,.4)}
+.hero .btn:focus-visible{outline-color:#fff}
+.btn.solid{background:var(--g1);box-shadow:0 10px 20px -10px rgba(18,57,42,.7)}
+.tile,.card{border-radius:var(--r);box-shadow:var(--sh)}
+.tile{display:flex;flex-direction:column;padding:16px}
+.tile i{width:44px;height:44px;border-radius:14px;background:var(--mint);color:var(--g1);display:grid;place-items:center;margin-bottom:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tile i{color:var(--gold)}}
+.tile b{font-size:16px;font-weight:800;margin:0 0 4px}
+.card h3{font-weight:800}
+.steps li{padding:8px 0}.steps li:before{background:var(--g1);color:#fff}
+h2.t{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.chip{font-weight:600;font-size:14px;padding:8px 14px}
+.item h3{font-weight:700}.av{border-radius:16px}
+.price{background:var(--mint);padding:5px 12px;border-radius:999px;font-size:14px}
+label{font-size:14px;margin:16px 0 6px}
+input,select,textarea{min-height:48px;border-radius:14px}
+input:focus,select:focus,textarea:focus{border-color:var(--g2);outline:3px solid color-mix(in srgb,var(--g2) 30%,transparent);outline-offset:0}
+nav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:456px;margin:0 auto;border:1px solid var(--line);border-radius:22px;padding:6px;background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 32px -10px rgba(18,57,42,.35)}
+.tab{max-width:none;font-weight:600;border-radius:16px}
+.tab span{display:flex;justify-content:center;margin-bottom:2px;font-size:0}
+.tab[aria-current=page]{background:var(--g1);color:#fff}
+.toast{bottom:108px;border-radius:14px;box-shadow:var(--sh)}
+.me{overflow:hidden;padding:0}.me img,.av img{width:100%;height:100%;object-fit:cover;display:block}.av{overflow:hidden}
+.ph{width:136px;height:136px;margin:8px auto 16px;border-radius:50%;background:var(--mint);color:var(--g1);display:grid;place-items:center;font-size:48px;font-weight:800;overflow:hidden;border:4px solid var(--card);box-shadow:var(--sh)}
+.ph img{width:100%;height:100%;object-fit:cover}
+body.gate nav,body.gate .me{display:none}
+.row2{display:flex;flex-wrap:wrap;gap:8px}
+.sr{position:absolute;left:-9999px}
+.chat{display:flex;flex-direction:column}
+.ms{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:52vh;min-height:30vh;padding:8px 2px}
+.bub{max-width:82%;padding:10px 14px;border-radius:18px;background:var(--card);border:1px solid var(--line);overflow-wrap:anywhere}
+.bub small{display:block;font-size:11px;opacity:.65;margin-top:2px}
+.bub.me{align-self:flex-end;background:var(--g1);color:#fff;border-color:var(--g1)}
+.bub.them{align-self:flex-start}
+.rate{font-weight:600}.gold{color:var(--gold)}
+.stars{display:flex;gap:4px;justify-content:center;margin:6px 0}
+.star{background:none;border:0;font-size:34px;line-height:1;color:var(--line);padding:4px;min-width:44px;min-height:44px;cursor:pointer}
+.star.on{color:var(--gold)}
+.star:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:12px}
+.mf{display:flex;gap:8px;margin-top:8px}.mf input{flex:1;min-width:0}
+.tab{position:relative}.tab .bd{position:absolute;top:6px;left:calc(50% + 8px);width:11px;height:11px;border-radius:50%;background:var(--gold);border:2px solid var(--card)}
+.sec{font-size:17px;font-weight:800;margin:22px 0 10px}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);font-size:12px;font-weight:600;min-height:76px;box-shadow:var(--sh)}
+.cat span{font-size:24px}
+.rc{align-items:center;display:flex}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--g1);min-height:32px}.rc>div:nth-child(2){flex:1}
+.cat:focus-visible,.rc:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.hero .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.65);box-shadow:none}
+</style>
+</head>
+<body>
+<div id="splash" aria-label="Chargement de CoupDeMain"><svg viewBox="0 0 240 150" aria-hidden="true"><g class="hands"><g class="hr"><rect x="96" y="50" width="144" height="46" rx="23" fill="#b6dac8"/><g fill="#b6dac8"><circle cx="106" cy="105" r="7.5"/><circle cx="120" cy="107" r="7.5"/><circle cx="134" cy="107" r="7.5"/><circle cx="148" cy="104" r="7.5"/></g><rect x="204" y="44" width="16" height="58" rx="6" fill="#86bda3"/></g><g class="hl"><rect x="0" y="62" width="150" height="44" rx="22" fill="#fff"/><rect x="88" y="48" width="62" height="22" rx="11" fill="#fff"/><rect x="20" y="56" width="16" height="56" rx="6" fill="#cfe0d6"/></g></g><circle class="ring" cx="122" cy="84" r="16" fill="none" stroke="#f3b63f" stroke-width="3"/><g class="heart"><path d="M122 104C98 88 102 66 114 66c4 0 8 3 8 7 0 -4 4 -7 8 -7 12 0 16 22 -8 38z" fill="#f3b63f" stroke="#12392a" stroke-width="3" stroke-linejoin="round"/></g></svg><b>CoupDeMain</b><small>L'entraide près de chez vous</small></div>
+<div class="app">
+  <header>
+    <div class="logo" aria-hidden="true">🤝</div>
+    <div><h1>CoupDeMain</h1><small>L'entraide près de chez vous</small></div>
+    <button class="me" id="me" aria-label="Mon profil"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></button>
+  </header>
+  <main id="main"></main>
+</div>
+<nav aria-label="Navigation">
+  <button class="tab" data-v="home"><span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</button>
+  <button class="tab" data-v="find"><span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg></span>Trouver</button>
+  <button class="tab" data-v="offer"><span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg></span>Proposer</button>
+  <button class="tab" data-v="inbox"><span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>Messages<i class="bd" id="nbd" hidden></i></button>
+  <button class="tab" data-v="profile"><span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>Profil</button>
+</nav>
+<script>
+const CATS=["Bricolage","Jardinage","Ménage","Courses","Informatique","Garde d'animaux","Cours"];
+const EMO={"Bricolage":"🔧","Jardinage":"🌿","Ménage":"🧽","Courses":"🛒","Informatique":"💻","Garde d'animaux":"🐕","Cours":"📚"};
+let state={user:null,filter:"Tous",view:"home",
+ads:[
+{id:1,cat:"Bricolage",title:"Montage de meubles",who:"Camille",area:"Centre-ville",price:"15 €/h",desc:"Je monte vos meubles en kit et perce les murs proprement."},
+{id:2,cat:"Jardinage",title:"Taille de haie et tonte",who:"Mehdi",area:"Quartier des Lilas",price:"50 € le forfait",desc:"Tonte, taille de haie et évacuation des déchets : tout le jardin pour un prix fixe."},
+{id:3,cat:"Informatique",title:"Aide sur ordinateur et téléphone",who:"Sophie",area:"Centre-ville",price:"10 €/h",desc:"Je vous aide à installer, trier vos photos ou sécuriser vos comptes."},
+{id:4,cat:"Garde d'animaux",title:"Promenade de chiens",who:"Lucas",area:"Parc Nord",price:"8 € la sortie",desc:"Disponible en fin de journée et le week-end."},
+{id:5,cat:"Courses",title:"Courses pour personnes âgées",who:"Nadia",area:"Les Lilas",price:"Gratuit",desc:"Je fais vos courses le samedi matin, sans frais."},
+{id:6,cat:"Cours",title:"Soutien en maths (collège)",who:"Antoine",area:"Gare",price:"18 €/h",desc:"Étudiant en master, méthode simple et rassurante."},
+{id:7,cat:"Bricolage",title:"Peinture et petits travaux",who:"Karim",area:"Centre",price:"15 €/h",desc:"Peinture, joints, fixations : je viens avec mon matériel."},
+{id:8,cat:"Ménage",title:"Ménage à domicile",who:"Julie",area:"Centre",price:"14 €/h",desc:"Appartement ou maison, produits écologiques fournis."},
+{id:9,cat:"Jardinage",title:"Entretien de jardin",who:"Hugo",area:"Centre",price:"60 € le forfait",desc:"Tonte, désherbage et taille des arbustes pour un prix fixe."}],
+sent:[],accounts:[],authMode:"login",radius:25,q:""};
+try{const s=JSON.parse(localStorage.getItem("cdm")||"null");if(s&&s.user)state.user=s.user;if(s&&s.mine)state.ads=state.ads.concat(s.mine);if(s&&s.accounts)state.accounts=s.accounts}catch(e){}
+const CITIES={"Paris":[48.8566,2.3522],"Versailles":[48.8049,2.1204],"Saint-Denis":[48.9362,2.3574],"Melun":[48.5408,2.6603],"Orléans":[47.9029,1.9093],"Lyon":[45.764,4.8357],"Villeurbanne":[45.7719,4.8902],"Marseille":[43.2965,5.3698],"Toulouse":[43.6047,1.4442],"Nice":[43.7102,7.262],"Nantes":[47.2184,-1.5536],"Bordeaux":[44.8378,-0.5792],"Lille":[50.6292,3.0573],"Strasbourg":[48.5734,7.7521],"Rennes":[48.1173,-1.6778],"Montpellier":[43.6108,3.8767],"Grenoble":[45.1885,5.7245]};
+const DEP={75:"Paris",69:"Lyon",13:"Marseille",31:"Toulouse",6:"Nice",44:"Nantes",33:"Bordeaux",59:"Lille",67:"Strasbourg",35:"Rennes",34:"Montpellier",38:"Grenoble"};
+const AC={1:"Paris",2:"Versailles",3:"Saint-Denis",4:"Melun",5:"Lyon",6:"Orléans",7:"Lyon",8:"Marseille",9:"Villeurbanne"};
+const ucity=u=>(u&&(u.city||DEP[+String(u.cp||"").slice(0,2)]))||"";
+const homeCity=()=>{const c=ucity(state.user);return Object.keys(CITIES).find(x=>norm(x)===norm(c))||DEP[+String(state.user&&state.user.cp||"").slice(0,2)]||"Paris"};
+const center=()=>state.center||homeCity();
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/-/g," ").toLowerCase().trim();
+const dist=(p,q)=>{const r=Math.PI/180,dl=(q[0]-p[0])*r,dn=(q[1]-p[1])*r,x=Math.sin(dl/2)**2+Math.cos(p[0]*r)*Math.cos(q[0]*r)*Math.sin(dn/2)**2;return Math.round(12742*Math.asin(Math.sqrt(x)))};
+const locOf=a=>a.mine?homeCity():AC[a.id]||"Paris";
+const cityOf=a=>a.mine?(ucity(state.user)||homeCity()):AC[a.id]||"Paris";
+const kmFrom=(a,c)=>dist(CITIES[locOf(a)],CITIES[c]);
+const km=a=>kmFrom(a,center());
+const RT={1:[4.8,23],2:[4.6,15],3:[5,8],4:[4.7,31],5:[4.9,42],6:[4.5,12],7:[4.4,9],8:[4.8,20],9:[4.7,6]};
+const myRate=id=>{const c=((state.user&&state.user.convs)||[]).find(x=>x.id===id);return c&&c.rating?c.rating:null};
+const rateOf=a=>{if(a.mine)return null;const b=RT[a.id]||[0,0],r=myRate(a.id),n=b[1]+(r?1:0);return n?{avg:(b[0]*b[1]+(r?r.stars:0))/n,n}:null};
+const starTxt=a=>{if(a.mine)return "";const r=rateOf(a);return r?` · <span class="rate"><span class="gold">★</span> ${r.avg.toFixed(1).replace(".",",")} (${r.n} avis)</span>`:" · Pas encore d'avis"};
+const $=s=>document.querySelector(s),main=$("#main");
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function save(){try{localStorage.setItem("cdm",JSON.stringify({user:state.user,mine:state.ads.filter(a=>a.mine),accounts:state.accounts}))}catch(e){}}
+function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function go(v){state.view=v;render();window.scrollTo(0,0)}
+function render(){
+  setMe();
+  if(!state.user&&!["welcome","profile"].includes(state.view))state.view="welcome";
+  document.body.classList.toggle("gate",!state.user);
+  document.querySelectorAll(".tab").forEach(b=>b.toggleAttribute("aria-current",b.dataset.v===state.view)||0);
+  document.querySelectorAll(".tab").forEach(b=>b.dataset.v===(state.view==="chat"?"inbox":state.view)?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+  ({home,find,offer,profile,photo,edit,delAcc,welcome,inbox,chat}[state.view])();
+  badge();
+}
+function home(){
+  const u=state.user,sent=(u.convs||[]).length,mine=state.ads.filter(a=>a.mine).length,kh=a=>kmFrom(a,homeCity()),recent=state.ads.filter(a=>!a.mine&&kh(a)<=state.radius).sort((x,y)=>kh(x)-kh(y)).slice(0,3);
+  main.innerHTML=`<h2 class="t" style="margin-bottom:4px">Bonjour ${esc(u.name)}</h2>
+  <p class="meta" style="margin:0 0 14px">Que cherchez-vous aujourd'hui ?</p>
+  <form id="sf" role="search"><label for="q" class="sr">Rechercher un service</label><input id="q" type="search" placeholder="Jardinage, bricolage, courses…" maxlength="40"></form>
+  <h3 class="sec">Catégories</h3>
+  <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${esc(c)}"><span aria-hidden="true">${EMO[c]}</span>${esc(c)}</button>`).join("")}</div>
+  <h3 class="sec">Près de chez vous <span class="meta">(dans un rayon de ${state.radius} km)</span></h3>
+  ${recent.map(a=>`<button class="card item rc" data-c="${esc(a.cat)}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${kh(a)} km${starTxt(a)}</div></div><span class="price">${esc(a.price)}</span></button>`).join("")}
+  <div class="card"><h3>Mon activité</h3><p class="meta" style="margin:0 0 12px">${mine} annonce${mine>1?"s":""} publiée${mine>1?"s":""} · ${sent} conversation${sent>1?"s":""}</p><button class="btn solid" id="go" style="width:100%">Proposer un service</button></div>`;
+  $("#sf").onsubmit=e=>{e.preventDefault();state.q=$("#q").value.trim();state.filter="Tous";go("find")};
+  main.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;state.q="";go("find")});
+  $("#go").onclick=()=>go("offer");
+}
+function find(){
+  const list=state.ads.filter(a=>(state.filter==="Tous"||a.cat===state.filter)&&km(a)<=state.radius&&(!state.q||(a.title+" "+a.desc+" "+a.cat).toLowerCase().includes(state.q.toLowerCase()))).sort((x,y)=>km(x)-km(y));
+  main.innerHTML=`<h2 class="t">Trouver de l'aide</h2>
+  ${state.q?'<p class="meta">Résultats pour « '+esc(state.q)+' » <button class="chip" id="cq" type="button">Effacer</button></p>':""}
+  <form class="card" id="cf2" style="padding:14px" novalidate><label for="city" style="margin:0 0 6px">Ville</label><div class="row2" style="flex-wrap:nowrap"><input id="city" list="cities" value="${esc(center())}" placeholder="Tapez une ville" autocomplete="off"><button class="btn solid" type="submit">OK</button></div>
+  <datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist><div class="err" id="ce" role="alert"></div>
+  ${center()!==homeCity()?'<button class="chip" id="hm" type="button" style="margin-bottom:8px">Revenir à '+esc(homeCity())+'</button>':""}
+  <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="100" step="1" value="${state.radius}"></form>
+  <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
+  ${list.length?list.map(a=>`<article class="card"><div class="item"><div class="av" aria-hidden="true">${a.mine&&state.user&&state.user.photo?'<img src="'+state.user.photo+'" alt="">':EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${km(a)} km${starTxt(a)}</div></div></div>
+  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===a.id))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
+  main.querySelectorAll(".chip[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;find()});
+  const cq=$("#cq");if(cq)cq.onclick=()=>{state.q="";find()};
+  $("#cf2").onsubmit=e=>{e.preventDefault();const n=norm($("#city").value),k=Object.keys(CITIES).find(c=>norm(c)===n);
+    if(!k){$("#ce").textContent="Ville inconnue dans ce prototype. Choisissez-en une dans la liste proposée.";return}
+    state.center=k;find()};
+  const hm=$("#hm");if(hm)hm.onclick=()=>{state.center=null;find()};
+  $("#rad").oninput=e=>{$("#rv").textContent=e.target.value+" km"};
+  $("#rad").onchange=e=>{state.radius=+e.target.value;find()};
+  main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{
+    if(!state.user){toast("Créez votre profil pour contacter quelqu'un");return go("profile")}
+    state.chatId=+b.dataset.id;go("chat")});
+}
+function offer(){
+  if(!state.user){main.innerHTML=`<h2 class="t">Proposer un service</h2><div class="card"><p>Créez votre profil pour publier une annonce.</p><button class="btn solid" id="p">Créer mon compte</button></div>`;$("#p").onclick=()=>go("profile");return}
+  main.innerHTML=`<h2 class="t">Proposer un service</h2><form class="card" id="f" novalidate>
+  <label for="cat">Catégorie</label><select id="cat">${CATS.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+  <label for="ti">Titre de l'annonce</label><input id="ti" maxlength="60" placeholder="Ex. : Réparation de vélos">
+  <label for="de">Description</label><textarea id="de" rows="3" maxlength="240" placeholder="Ce que vous proposez, vos disponibilités"></textarea>
+  <label for="pt">Type de tarif</label><select id="pt"><option value="h">Par heure</option><option value="f">Forfait (prix total)</option><option value="g">Gratuit</option></select>
+  <div id="pa"><label for="pr">Montant en €</label><input id="pr" type="number" inputmode="decimal" min="1" max="9999" step="0.5" placeholder="Ex. : 10"><p class="meta" id="ph2"></p></div>
+  <div class="err" id="e" role="alert"></div><button class="btn solid" type="submit" style="width:100%">Publier mon annonce</button></form>`;
+  const pt=$("#pt"),hint=()=>{$("#pa").hidden=pt.value==="g";$("#ph2").textContent=pt.value==="h"?"Vous facturez chaque heure travaillée, par exemple 10 €/h.":"Prix fixe pour l'ensemble du service, par exemple 50 € pour tout le jardin."};
+  pt.onchange=hint;hint();
+  $("#f").onsubmit=e=>{e.preventDefault();const t=$("#ti").value.trim(),d=$("#de").value.trim(),ty=pt.value,n=parseFloat(String($("#pr").value).replace(",","."));
+    if(!t||!d){$("#e").textContent="Renseignez le titre et la description.";return}
+    if(ty!=="g"&&!(n>=1&&n<=9999)){$("#e").textContent="Indiquez un montant en euros, entre 1 et 9999.";return}
+    const p=ty==="g"?"Gratuit":String(Math.round(n*100)/100).replace(".",",")+(ty==="h"?" €/h":" € le forfait");
+    state.ads.unshift({id:Date.now(),cat:$("#cat").value,title:t,desc:d,price:p,who:state.user.name,area:ucity(state.user),mine:true});save();toast("Annonce publiée");state.filter="Tous";go("find")};
+}
+function profile(){
+  if(state.user){const mine=state.ads.filter(a=>a.mine);
+    main.innerHTML=`<h2 class="t">Mon profil</h2><div class="card"><div class="item">${av(state.user)}<div><h3>${esc(state.user.name)}</h3><div class="meta">${esc(ucity(state.user))}</div></div></div><button class="btn solid" id="ph" style="width:100%;margin-top:14px">${state.user.photo?"Changer ma photo":"Ajouter une photo"}</button><button class="btn" id="ed" style="width:100%;margin-top:8px;background:var(--mint);color:var(--ink)">Modifier mes informations</button></div>
+    <div class="card"><h3>Mes informations</h3><p class="meta">${esc(state.user.name)} ${esc(state.user.lastName||"")}<br>${esc(state.user.email||"")}<br>${esc(state.user.phone||"")}<br>${esc(state.user.address||"")}, ${esc(state.user.cp||"")} ${esc(ucity(state.user))}${state.user.birth?"<br>Né(e) le "+new Date(state.user.birth+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}</p></div>
+    <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<p>${EMO[a.cat]} ${esc(a.title)} <span class="meta">· ${esc(a.price)}</span></p>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
+    <button class="btn solid" id="out" style="width:100%">Se déconnecter</button><button class="btn" id="rm" style="width:100%;margin-top:8px;background:transparent;color:var(--err);border:1px solid var(--err)">Supprimer mon compte</button>`;
+    $("#ph").onclick=()=>go("photo");
+    $("#ed").onclick=()=>go("edit");
+    $("#rm").onclick=()=>go("delAcc");
+    $("#out").onclick=()=>{state.user=null;state.ads=state.ads.filter(a=>!a.mine);state.sent=[];save();state.center=null;toast("Vous êtes déconnecté");go("welcome")};return}
+  return auth();
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>go(b.dataset.v));
+$("#me").onclick=()=>go("profile");
+function auth(){
+  const login=state.authMode!=="signup",today=new Date().toISOString().slice(0,10);
+  main.innerHTML=`<h2 class="t">${login?"Connexion":"Créer mon compte"}</h2>
+  <div class="chips" role="group" aria-label="Connexion ou inscription"><button class="chip" aria-pressed="${login}" data-m="login">Connexion</button><button class="chip" aria-pressed="${!login}" data-m="signup">Inscription</button></div>
+  <form class="card" id="f" novalidate>${login?`<label for="m">E-mail</label><input id="m" type="email" autocomplete="email">
+  <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password">`:`<label for="pn">Prénom</label><input id="pn" autocomplete="given-name" maxlength="30">
+  <label for="nm">Nom</label><input id="nm" autocomplete="family-name" maxlength="30">
+  <label for="bd">Date de naissance</label><input id="bd" type="date" autocomplete="bday" max="${today}">
+  <label for="ad">Adresse</label><input id="ad" autocomplete="street-address" maxlength="80" placeholder="Numéro et nom de rue">
+  <label for="cp">Code postal</label><input id="cp" inputmode="numeric" autocomplete="postal-code" maxlength="5">
+  <label for="vl">Ville</label><input id="vl" list="cities" autocomplete="address-level2" maxlength="40" placeholder="Ex. : Lyon"><datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist>
+  <label for="tel">Numéro de téléphone</label><input id="tel" type="tel" autocomplete="tel" maxlength="20" placeholder="06 12 34 56 78">
+  <label for="m">E-mail</label><input id="m" type="email" autocomplete="email">
+  <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="new-password" placeholder="8 caractères minimum">`}
+  <div class="err" id="e" role="alert"></div><button class="btn solid" type="submit" style="width:100%">${login?"Se connecter":"Créer mon compte"}</button></form>
+  <p class="note">Prototype : les données et le mot de passe (conservé sous forme chiffrée) restent sur cet appareil.</p>
+  <button class="chip" id="bk" type="button">Retour à l'accueil</button>`;
+  $("#bk").onclick=()=>go("welcome");
+  main.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{state.authMode=b.dataset.m;auth()});
+  const err=t=>{$("#e").textContent=t};
+  $("#f").onsubmit=async e=>{e.preventDefault();
+    const m=$("#m").value.trim().toLowerCase(),pw=$("#pw").value;
+    if(!/^\S+@\S+\.\S+$/.test(m))return err("Saisissez une adresse e-mail valide.");
+    if(login){const a=state.accounts.find(x=>x.email===m);
+      if(!a)return err("E-mail ou mot de passe incorrect. Pas encore de compte ? Ouvrez l'onglet Inscription.");
+      if(!pw)return err("Saisissez votre mot de passe.");
+      try{if(a.pw){if(!await chk(a,pw))return err("E-mail ou mot de passe incorrect. Pas encore de compte ? Ouvrez l'onglet Inscription.")}else{if(pw.length<8)return err("Ce compte n'a pas encore de mot de passe : choisissez-en un de 8 caractères minimum.");a.pw=await mkpw(pw)}}catch(x){return err("Impossible de sécuriser le mot de passe sur cet appareil.")}
+      state.user=a;save();toast("Bon retour "+a.name+" !");return go("home")}
+    const pn=$("#pn").value.trim(),nm=$("#nm").value.trim(),bd=$("#bd").value,ad=$("#ad").value.trim(),cp=$("#cp").value.trim(),vl=$("#vl").value.trim(),tel=$("#tel").value.trim();
+    if(!pn||!nm)return err("Indiquez votre prénom et votre nom.");
+    const b=new Date(bd),t=new Date();if(!bd||isNaN(b))return err("Indiquez votre date de naissance.");
+    let age=t.getFullYear()-b.getFullYear();if(t<new Date(t.getFullYear(),b.getMonth(),b.getDate()))age--;
+    if(age<18)return err("Il faut avoir 18 ans ou plus pour s'inscrire.");
+    if(ad.length<5)return err("Indiquez votre adresse (numéro et rue).");
+    if(!/^\d{5}$/.test(cp))return err("Le code postal comporte 5 chiffres.");
+    if(vl.length<2)return err("Indiquez votre ville.");
+    if(!/^(?:\+33|0)[1-9](?:[ .-]?\d{2}){4}$/.test(tel))return err("Saisissez un numéro français valide, par exemple 06 12 34 56 78.");
+    if(state.accounts.some(x=>x.email===m))return err("Un compte existe déjà avec cet e-mail. Ouvrez l'onglet Connexion.");
+    if(pw.length<8)return err("Le mot de passe comporte 8 caractères minimum.");
+    let h;try{h=await mkpw(pw)}catch(x){return err("Impossible de sécuriser le mot de passe sur cet appareil.")}
+    const u={name:pn,lastName:nm,birth:bd,address:ad,cp:cp,phone:tel,email:m,city:vl,area:vl,pw:h};
+    state.accounts.push(u);state.user=u;save();toast("Compte créé. Dernière étape : votre photo.");go("photo")};
+}
+const hx=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+async function hash(p,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(p),"PBKDF2",false,["deriveBits"]);return hx(await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:new TextEncoder().encode(salt),iterations:100000},k,256))}
+async function mkpw(p){const s=hx(crypto.getRandomValues(new Uint8Array(16)));return {salt:s,hash:await hash(p,s)}}
+async function chk(a,p){return !!a.pw&&await hash(p,a.pw.salt)===a.pw.hash}
+function vInfo(pn,nm,bd,ad,cp,tel,m){
+  if(!pn||!nm)return "Indiquez votre prénom et votre nom.";
+  const b=new Date(bd),t=new Date();if(!bd||isNaN(b))return "Indiquez votre date de naissance.";
+  let age=t.getFullYear()-b.getFullYear();if(t<new Date(t.getFullYear(),b.getMonth(),b.getDate()))age--;
+  if(age<18)return "Il faut avoir 18 ans ou plus.";
+  if(ad.length<5)return "Indiquez votre adresse (numéro et rue).";
+  if(!/^\d{5}$/.test(cp))return "Le code postal comporte 5 chiffres.";
+  if(!/^(?:\+33|0)[1-9](?:[ .-]?\d{2}){4}$/.test(tel))return "Saisissez un numéro français valide, par exemple 06 12 34 56 78.";
+  if(!/^\S+@\S+\.\S+$/.test(m))return "Saisissez une adresse e-mail valide.";
+  return ""}
+function edit(){
+  const u=state.user;if(!u)return go("profile");
+  const today=new Date().toISOString().slice(0,10),v=k=>esc(u[k]||"");
+  main.innerHTML=`<h2 class="t">Modifier mes informations</h2>
+  <form class="card" id="f" novalidate>
+  <label for="pn">Prénom</label><input id="pn" autocomplete="given-name" maxlength="30" value="${v("name")}">
+  <label for="nm">Nom</label><input id="nm" autocomplete="family-name" maxlength="30" value="${v("lastName")}">
+  <label for="bd">Date de naissance</label><input id="bd" type="date" autocomplete="bday" max="${today}" value="${v("birth")}">
+  <label for="ad">Adresse</label><input id="ad" autocomplete="street-address" maxlength="80" value="${v("address")}">
+  <label for="cp">Code postal</label><input id="cp" inputmode="numeric" autocomplete="postal-code" maxlength="5" value="${v("cp")}">
+  <label for="vl">Ville</label><input id="vl" list="cities" autocomplete="address-level2" maxlength="40" value="${esc(ucity(u))}"><datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist>
+  <label for="tel">Numéro de téléphone</label><input id="tel" type="tel" autocomplete="tel" maxlength="20" value="${v("phone")}">
+  <label for="m">E-mail</label><input id="m" type="email" autocomplete="email" value="${v("email")}">
+  <div class="err" id="e" role="alert"></div><button class="btn solid" type="submit" style="width:100%">Enregistrer les modifications</button></form>
+  <h2 class="t">Mot de passe</h2>
+  <form class="card" id="g" novalidate>${u.pw?`<label for="op">Mot de passe actuel</label><input id="op" type="password" autocomplete="current-password">`:`<p class="meta">Ce compte n'a pas encore de mot de passe. Choisissez-en un.</p>`}
+  <label for="np">Nouveau mot de passe</label><input id="np" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
+  <label for="cf">Confirmer le nouveau mot de passe</label><input id="cf" type="password" autocomplete="new-password">
+  <div class="err" id="e2" role="alert"></div><button class="btn solid" type="submit" style="width:100%">Changer le mot de passe</button></form>
+  <button class="chip" id="back" type="button">Retour au profil</button>`;
+  const err=t=>{$("#e").textContent=t},e2=t=>{$("#e2").textContent=t};
+  $("#back").onclick=()=>go("profile");
+  $("#f").onsubmit=ev=>{ev.preventDefault();
+    const [pn,nm,bd,ad,cp,tel,mm,vl]=["pn","nm","bd","ad","cp","tel","m","vl"].map(i=>$("#"+i).value.trim()),m=mm.toLowerCase();
+    const er=vInfo(pn,nm,bd,ad,cp,tel,m);if(er)return err(er);
+    if(vl.length<2)return err("Indiquez votre ville.");
+    if(state.accounts.some(x=>x!==u&&x.email===m))return err("Un autre compte utilise déjà cet e-mail.");
+    Object.assign(u,{name:pn,lastName:nm,birth:bd,address:ad,cp:cp,phone:tel,email:m,city:vl,area:vl});
+    state.ads.forEach(a=>{if(a.mine){a.who=pn;a.area=vl}});
+    save();toast("Informations enregistrées");go("profile")};
+  $("#g").onsubmit=async ev=>{ev.preventDefault();
+    const np=$("#np").value,cf=$("#cf").value;
+    try{if(u.pw){const op=$("#op").value;if(!op)return e2("Saisissez votre mot de passe actuel.");if(!await chk(u,op))return e2("Le mot de passe actuel est incorrect.")}
+      if(np.length<8)return e2("Le nouveau mot de passe comporte 8 caractères minimum.");
+      if(np!==cf)return e2("Les deux mots de passe ne sont pas identiques.");
+      u.pw=await mkpw(np);save();toast("Mot de passe modifié");go("profile")}
+    catch(x){e2("Impossible de modifier le mot de passe sur cet appareil.")}};
+}
+function delAcc(){
+  const u=state.user;if(!u)return go("profile");
+  main.innerHTML=`<h2 class="t">Supprimer mon compte</h2>
+  <form class="card" id="f" novalidate><p>Cette action est définitive. Votre profil, votre photo et vos annonces seront effacés de cet appareil.</p>
+  ${u.pw?`<label for="op">Mot de passe</label><input id="op" type="password" autocomplete="current-password">`:`<label for="cf">Tapez SUPPRIMER pour confirmer</label><input id="cf" autocomplete="off">`}
+  <div class="err" id="e" role="alert"></div>
+  <button class="btn" type="submit" style="width:100%;background:var(--err);color:#fff">Supprimer définitivement</button></form>
+  <button class="chip" id="back" type="button">Annuler</button>`;
+  $("#back").onclick=()=>go("profile");
+  $("#f").onsubmit=async ev=>{ev.preventDefault();const err=t=>{$("#e").textContent=t};
+    try{if(u.pw){const p=$("#op").value;if(!p)return err("Saisissez votre mot de passe.");if(!await chk(u,p))return err("Le mot de passe est incorrect.")}
+      else if($("#cf").value.trim().toUpperCase()!=="SUPPRIMER")return err("Tapez SUPPRIMER pour confirmer.")}
+    catch(x){return err("Impossible de vérifier le mot de passe sur cet appareil.")}
+    state.accounts=state.accounts.filter(a=>a!==u);state.ads=state.ads.filter(a=>!a.mine);state.user=null;state.sent=[];state.authMode="login";save();
+    state.center=null;toast("Votre compte a été supprimé");go("welcome")};
+}
+const REPLIES=["Bonjour ! Oui, je suis disponible. Quel jour vous arrangerait ?","Très bien, ça me convient. On se met d'accord sur le tarif sur place ?","Parfait, à bientôt !"];
+const hh=t=>new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&(u.convs||[]).some(c=>c.unread))}
+function inbox(){
+  const u=state.user,cs=(u.convs||[]).slice().sort((a,b)=>b.msgs[b.msgs.length-1].t-a.msgs[a.msgs.length-1].t);
+  main.innerHTML=`<h2 class="t">Messages</h2>${cs.length?cs.map(c=>{const l=c.msgs[c.msgs.length-1];return `<button class="card item rc" data-id="${c.id}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[c.cat]}</div><div><h3>${esc(c.who)}${c.unread?' <span class="price">Nouveau</span>':""}</h3><div class="meta">${esc(c.title)}</div><div class="meta">${esc((l.from==="me"?"Vous : ":"")+l.text.slice(0,60))}</div></div></button>`}).join(""):`<p class="empty">Aucune conversation pour le moment. Touchez « Contacter » sur une annonce pour écrire à un voisin.</p><button class="btn solid" id="gf" style="width:100%">Trouver de l'aide</button>`}`;
+  main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{state.chatId=+b.dataset.id;go("chat")});
+  const g=$("#gf");if(g)g.onclick=()=>go("find");
+}
+function chat(){
+  const u=state.user,ad=state.ads.find(a=>a.id===state.chatId);
+  u.convs=u.convs||[];let c=u.convs.find(x=>x.id===state.chatId);
+  if(!ad&&!c)return go("inbox");
+  const who=c?c.who:ad.who,title=c?c.title:ad.title,cat=c?c.cat:ad.cat,price=ad?ad.price:"";
+  if(c&&c.unread){c.unread=false;save()}
+  const draw=()=>{const ms=c?c.msgs:[],el=$("#ms");el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from}">${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.scrollTop=el.scrollHeight};
+  main.innerHTML=`<div class="chat"><div class="item" style="align-items:center;margin-bottom:8px"><button class="chip" id="bk" type="button" aria-label="Retour aux messages">←</button><div class="av" aria-hidden="true">${EMO[cat]}</div><div><h3>${esc(who)}</h3><div class="meta">${esc(title)}${price?" · "+esc(price):""}${ad?starTxt(ad):""}</div></div><button class="chip" id="rt" type="button" style="margin-left:auto">${c&&c.rating?"Modifier ma note":"Noter"}</button></div>
+  <div id="rp" class="card" hidden></div>
+  <div id="ms" class="ms" aria-live="polite"></div>
+  <form id="mf" class="mf"><label for="mt" class="sr">Votre message</label><input id="mt" maxlength="300" autocomplete="off" placeholder="Écrire un message" value="${c?"":esc("Bonjour "+who+", votre annonce « "+title+" » m'intéresse. Êtes-vous disponible cette semaine ?")}"><button class="btn solid" type="submit">Envoyer</button></form>
+  <p class="note">Prototype : les réponses sont simulées. Le paiement se fait sur place : ne partagez jamais vos coordonnées bancaires.</p></div>`;
+  draw();
+  $("#bk").onclick=()=>go("inbox");
+  let stars=c&&c.rating?c.rating.stars:0,txt=c&&c.rating?c.rating.text:"";
+  const panel=()=>{$("#rp").innerHTML=`<h3>Votre avis sur ${esc(who)}</h3><div class="stars" role="group" aria-label="Note sur 5">${[1,2,3,4,5].map(i=>`<button type="button" class="star${i<=stars?" on":""}" data-s="${i}" aria-label="${i} étoile${i>1?"s":""}" aria-pressed="${i<=stars}">★</button>`).join("")}</div>
+  <label for="rc" class="sr">Commentaire</label><textarea id="rc" rows="2" maxlength="200" placeholder="Un commentaire (facultatif)">${esc(txt)}</textarea>
+  <div class="err" id="re" role="alert"></div><button class="btn solid" id="rs" type="button" style="width:100%">Publier mon avis</button>`;
+    $("#rp").querySelectorAll(".star").forEach(b=>b.onclick=()=>{txt=$("#rc").value;stars=+b.dataset.s;panel()});
+    $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}c.rating={stars,text:$("#rc").value.trim()};save();toast("Merci pour votre avis !");chat()}};
+  $("#rt").onclick=()=>{if(!c){toast("Envoyez d'abord un message pour pouvoir noter.");return}const r=$("#rp");r.hidden=!r.hidden;if(!r.hidden)panel()};
+  $("#mf").onsubmit=e=>{e.preventDefault();const t=$("#mt").value.trim();if(!t)return;
+    if(!c){c={id:state.chatId,who,title,cat,msgs:[],unread:false};u.convs.push(c)}
+    c.msgs.push({from:"me",text:t,t:Date.now()});$("#mt").value="";save();draw();
+    const n=c.msgs.filter(m=>m.from==="me").length,cc=c;
+    setTimeout(()=>{if(state.user!==u)return;cc.msgs.push({from:"them",text:REPLIES[Math.min(n,REPLIES.length)-1],t:Date.now()});
+      if(state.view==="chat"&&state.chatId===cc.id){draw()}else{cc.unread=true}save();badge()},1200)};
+}
+const ME0=$("#me").innerHTML;
+function setMe(){const u=state.user;$("#me").innerHTML=u&&u.photo?'<img src="'+u.photo+'" alt="">':ME0}
+function av(u){return '<div class="av">'+(u.photo?'<img src="'+u.photo+'" alt="">':esc((u.name||"?")[0].toUpperCase()))+'</div>'}
+function photo(){
+  const u=state.user;if(!u)return go("profile");
+  let data=u.photo||"";
+  main.innerHTML=`<h2 class="t">Votre photo de profil</h2>
+  <div class="card" style="text-align:center"><div class="ph" id="pv"></div>
+  <p class="meta">Une photo aide vos voisins à vous faire confiance. Choisissez un visage net et bien éclairé.</p>
+  <input id="fi" type="file" accept="image/*" hidden>
+  <button class="btn solid" id="pick" type="button" style="width:100%">Choisir une photo</button>
+  <div class="err" id="e" role="alert"></div>
+  <button class="btn gold" id="ok" type="button" style="width:100%">Enregistrer et continuer</button>
+  <button class="chip" id="skip" type="button" style="margin-top:12px">Passer pour l'instant</button></div>`;
+  const err=t=>{$("#e").textContent=t};
+  const show=()=>{$("#pv").innerHTML=data?'<img src="'+data+'" alt="Aperçu de votre photo">':esc((u.name||"?")[0].toUpperCase())};
+  show();
+  $("#pick").onclick=()=>$("#fi").click();
+  $("#fi").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
+    if(!f.type.startsWith("image/"))return err("Choisissez un fichier image.");
+    const r=new FileReader();r.onerror=()=>err("Ce fichier n'a pas pu être lu. Essayez-en un autre.");
+    r.onload=()=>{const im=new Image();im.onerror=()=>err("Cette image n'a pas pu être lue. Essayez-en une autre.");
+      im.onload=()=>{const s=256,c=document.createElement("canvas");c.width=c.height=s;const m=Math.min(im.width,im.height);
+        c.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,s,s);data=c.toDataURL("image/jpeg",.82);show();err("")};
+      im.src=r.result};r.readAsDataURL(f)};
+  $("#ok").onclick=()=>{if(!data)return err("Choisissez d'abord une photo, ou passez cette étape.");u.photo=data;save();toast("Photo enregistrée");go("home")};
+  $("#skip").onclick=()=>go("home");
+}
+function welcome(){
+  main.innerHTML=`<section class="hero"><h2>Un voisin peut faire toute la différence.</h2>
+  <p>Trouvez un coup de main près de chez vous, ou partagez vos compétences.</p>
+  <div class="row2"><button class="btn" id="su">Créer mon compte</button><button class="btn ghost" id="li">Se connecter</button></div></section>
+  <div class="card" style="margin-top:16px"><h3>Comment ça marche ?</h3><ol class="steps"><li>Créez votre profil.</li><li>Trouvez ou proposez un service.</li><li>Convenez du rendez-vous et du tarif.</li><li>Le paiement se fait sur place, entre vous.</li></ol></div>
+  <p class="note">Prototype : profils et annonces fictifs</p>`;
+  $("#su").onclick=()=>{state.authMode="signup";go("profile")};
+  $("#li").onclick=()=>{state.authMode="login";go("profile")};
+}
+if(!state.user)state.view="welcome";
+render();
+const sp=$("#splash");let done=false;
+function hideSplash(){if(done)return;done=true;sp.classList.add("out");setTimeout(()=>sp.remove(),450)}
+sp.onclick=hideSplash;setTimeout(hideSplash,matchMedia("(prefers-reduced-motion:reduce)").matches?500:3200);
+</script>
+</body>
+</html>
