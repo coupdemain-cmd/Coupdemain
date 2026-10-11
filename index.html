@@ -129,6 +129,8 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--g1);min-
 .sw{appearance:none;-webkit-appearance:none;flex:none;width:52px;min-height:0;height:30px;padding:0;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;transition:background .2s}
 .sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
 .sw:checked{background:var(--g2)}.sw:checked:after{transform:translateX(22px)}
+.sug{display:flex;flex-direction:column;margin:6px 0 8px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}.sug[hidden]{display:none}
+.sugi{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;padding:10px 14px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;color:inherit;text-align:left;font:inherit;box-shadow:none}.sugi:first-child{border-top:0}.sugi span{color:var(--mute);font-size:13px;flex:none}
 .hero .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.65);box-shadow:none}
 </style>
 </head>
@@ -180,6 +182,24 @@ window.cdmMerge=function(remote){
 function loadRemote(){if(window.cdmAds)window.cdmAds.subscribe(window.cdmMerge)}
 const CITIES={"Paris":[48.8566,2.3522],"Versailles":[48.8049,2.1204],"Saint-Denis":[48.9362,2.3574],"Melun":[48.5408,2.6603],"Orléans":[47.9029,1.9093],"Lyon":[45.764,4.8357],"Villeurbanne":[45.7719,4.8902],"Marseille":[43.2965,5.3698],"Toulouse":[43.6047,1.4442],"Nice":[43.7102,7.262],"Nantes":[47.2184,-1.5536],"Bordeaux":[44.8378,-0.5792],"Lille":[50.6292,3.0573],"Strasbourg":[48.5734,7.7521],"Rennes":[48.1173,-1.6778],"Montpellier":[43.6108,3.8767],"Grenoble":[45.1885,5.7245]};
 const DEP={75:"Paris",69:"Lyon",13:"Marseille",31:"Toulouse",6:"Nice",44:"Nantes",33:"Bordeaux",59:"Lille",67:"Strasbourg",35:"Rennes",34:"Montpellier",38:"Grenoble"};
+const XK="cdm_xc";try{Object.assign(CITIES,JSON.parse(localStorage.getItem(XK)||"{}"))}catch(e){}
+function addCity(nom,lat,lon,dep){let key=nom;const ex=CITIES[nom];if(ex&&Math.abs(ex[0]-lat)+Math.abs(ex[1]-lon)>0.15)key=nom+" ("+dep+")";
+  CITIES[key]=[+(+lat).toFixed(4),+(+lon).toFixed(4)];try{const x=JSON.parse(localStorage.getItem(XK)||"{}");x[key]=CITIES[key];const ks=Object.keys(x);if(ks.length>120)delete x[ks[0]];localStorage.setItem(XK,JSON.stringify(x))}catch(e){}return key}
+async function geoSearch(q){try{const dig=/^\d{5}$/.test(q);const r=await fetch("https://geo.api.gouv.fr/communes?"+(dig?"codePostal="+q:"nom="+encodeURIComponent(q)+"&boost=population")+"&fields=nom,centre,departement&limit=6");if(!r.ok)return[];const j=await r.json();
+  return j.filter(c=>c.centre&&c.centre.coordinates).map(c=>({nom:c.nom,lat:c.centre.coordinates[1],lon:c.centre.coordinates[0],dep:c.departement?c.departement.code:""}))}catch(e){return[]}}
+async function resolveCity(vl,cp){const n=norm(vl),k=Object.keys(CITIES).find(c=>norm(c)===n);if(k)return k;const r=await geoSearch(vl);if(!r.length)return"";
+  const d=String(cp||"").slice(0,2),pick=r.find(c=>norm(c.nom)===n&&String(c.dep).slice(0,2)===d)||r.find(c=>norm(c.nom)===n)||r[0];return addCity(pick.nom,pick.lat,pick.lon,pick.dep)}
+function attachSuggest(inp,pick){if(!inp)return;const box=document.createElement("div");box.className="sug";box.hidden=true;(inp.closest(".row2")||inp).insertAdjacentElement("afterend",box);
+  inp.removeAttribute("list");inp.setAttribute("autocomplete","off");inp.setAttribute("autocapitalize","words");let t=0,seq=0,items=[];
+  const show=a=>{items=a;box.innerHTML=a.map((c,i)=>`<button type="button" class="sugi" data-i="${i}"><b>${esc(c.nom)}</b><span>${esc(c.dep||"")}</span></button>`).join("");box.hidden=!a.length};
+  const run=async()=>{const q=inp.value.trim();if(q.length<2){show([]);return}const me=++seq;
+    const loc=Object.keys(CITIES).filter(c=>norm(c).startsWith(norm(q))).slice(0,3).map(c=>({nom:c,lat:CITIES[c][0],lon:CITIES[c][1],dep:"",known:1}));show(loc);
+    const r=await geoSearch(q);if(me!==seq)return;show(r.concat(loc.filter(l=>!r.some(x=>norm(x.nom)===norm(l.nom)))).slice(0,6))};
+  inp.addEventListener("input",()=>{clearTimeout(t);t=setTimeout(run,220)});
+  box.addEventListener("click",e=>{const b=e.target.closest(".sugi");if(!b||!items[+b.dataset.i])return;const c=items[+b.dataset.i];const k=c.known?c.nom:addCity(c.nom,c.lat,c.lon,c.dep);inp.value=k;show([]);if(pick)pick(k)})}
+let homeTried="";
+function ensureHome(){const u=state.user;if(!u)return;const c=ucity(u);if(!c||homeTried===c||Object.keys(CITIES).some(x=>norm(x)===norm(c)))return;homeTried=c;
+  resolveCity(c,u.cp).then(k=>{if(k&&["home","find","profile"].includes(state.view))render()})}
 const AC={1:"Paris",2:"Versailles",3:"Saint-Denis",4:"Melun",5:"Lyon",6:"Orléans",7:"Lyon",8:"Marseille",9:"Villeurbanne"};
 const ucity=u=>(u&&(u.city||DEP[+String(u.cp||"").slice(0,2)]))||"";
 const homeCity=()=>{const c=ucity(state.user);return Object.keys(CITIES).find(x=>norm(x)===norm(c))||DEP[+String(state.user&&state.user.cp||"").slice(0,2)]||"Paris"};
@@ -236,7 +256,7 @@ window.cdmMsgIn=function(list,init){
   if(state.view==="chat"&&state.drawChat&&document.getElementById("ms"))state.drawChat();
   else if(state.view==="inbox")inbox();
 };
-function go(v){state.view=v;remine();ensureMsgSub();render();window.scrollTo(0,0)}
+function go(v){state.view=v;remine();ensureMsgSub();ensureHome();render();window.scrollTo(0,0)}
 function render(){
   setMe();
   if(!state.user&&!["welcome","profile"].includes(state.view))state.view="welcome";
@@ -264,8 +284,8 @@ function find(){
   const list=state.ads.filter(a=>(state.filter==="Tous"||a.cat===state.filter)&&km(a)<=state.radius&&(!state.q||(a.title+" "+a.desc+" "+a.cat).toLowerCase().includes(state.q.toLowerCase()))).sort((x,y)=>km(x)-km(y));
   main.innerHTML=`<h2 class="t">Trouver de l'aide</h2>
   ${state.q?'<p class="meta">Résultats pour « '+esc(state.q)+' » <button class="chip" id="cq" type="button">Effacer</button></p>':""}
-  <form class="card" id="cf2" style="padding:14px" novalidate><label for="city" style="margin:0 0 6px">Ville</label><div class="row2" style="flex-wrap:nowrap"><input id="city" list="cities" value="${esc(center())}" placeholder="Tapez une ville" autocomplete="off"><button class="btn solid" type="submit">OK</button></div>
-  <datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist><div class="err" id="ce" role="alert"></div>
+  <form class="card" id="cf2" style="padding:14px" novalidate><label for="city" style="margin:0 0 6px">Ville</label><div class="row2" style="flex-wrap:nowrap"><input id="city" value="${esc(center())}" placeholder="Tapez une ville" autocomplete="off"><button class="btn solid" type="submit">OK</button></div>
+  <div class="err" id="ce" role="alert"></div>
   ${center()!==baseCity()?'<button class="chip" id="hm" type="button" style="margin-bottom:8px">Revenir à '+esc(baseCity())+'</button>':""}
   <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="100" step="1" value="${state.radius}"></form>
   <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
@@ -273,9 +293,10 @@ function find(){
   <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span><button class="chip" type="button" data-del="'+a.id+'">Supprimer</button>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
   main.querySelectorAll(".chip[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;find()});
   const cq=$("#cq");if(cq)cq.onclick=()=>{state.q="";find()};
-  $("#cf2").onsubmit=e=>{e.preventDefault();const n=norm($("#city").value),k=Object.keys(CITIES).find(c=>norm(c)===n);
-    if(!k){$("#ce").textContent="Ville inconnue dans ce prototype. Choisissez-en une dans la liste proposée.";return}
+  $("#cf2").onsubmit=async e=>{e.preventDefault();const v=$("#city").value.trim();if(!v)return;let k=Object.keys(CITIES).find(c=>norm(c)===norm(v));
+    if(!k){$("#ce").textContent="Recherche…";k=await resolveCity(v,"");if(!k){$("#ce").textContent="Ville introuvable en France. Vérifiez l'orthographe et la connexion.";return}}
     state.center=k;find()};
+  attachSuggest($("#city"),k=>{state.center=k;find()});
   const hm=$("#hm");if(hm)hm.onclick=()=>{state.center=null;find()};
   main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Supprimer cette annonce pour tout le monde ?"))return;const id=+b.dataset.del;
     state.ads=state.ads.filter(x=>x.id!==id);save();if(window.cdmAds)window.cdmAds.remove(id).catch(()=>toast("Suppression en ligne impossible : vérifiez la connexion"));toast("Annonce supprimée");find()});
@@ -301,7 +322,7 @@ function offer(){
     if(ty!=="g"&&!(n>=1&&n<=9999)){$("#e").textContent="Indiquez un montant en euros, entre 1 et 9999.";return}
     const p=ty==="g"?"Gratuit":String(Math.round(n*100)/100).replace(".",",")+(ty==="h"?" €/h":" € le forfait");
     const ad={id:Date.now(),cat:$("#cat").value,title:t,desc:d,price:p,who:state.user.name,area:ucity(state.user),city:(state.user.geo&&(state.user.geoName||state.user.geoCity))||ucity(state.user)||homeCity(),loc:state.user.geo&&state.user.geoCity?state.user.geoCity:homeCity(),owner:state.user.email||"",mine:true};
-    if(state.user.geo&&state.user.geoPos){ad.lat=Math.round(state.user.geoPos[0]*100)/100;ad.lon=Math.round(state.user.geoPos[1]*100)/100}
+    if(state.user.geo&&state.user.geoPos){ad.lat=Math.round(state.user.geoPos[0]*100)/100;ad.lon=Math.round(state.user.geoPos[1]*100)/100}else{const hp=CITIES[homeCity()];if(hp){ad.lat=Math.round(hp[0]*100)/100;ad.lon=Math.round(hp[1]*100)/100}}
     state.ads.unshift(ad);save();state.filter="Tous";
     if(window.cdmAds){window.cdmAds.publish(ad).then(()=>toast("Annonce publiée : tout le monde peut la voir")).catch(()=>toast("Annonce enregistrée sur votre appareil seulement (connexion à la base impossible)"))}else toast("Annonce enregistrée sur votre appareil seulement");
     go("find")};
@@ -345,7 +366,7 @@ function auth(){
   <label for="bd">Date de naissance</label><input id="bd" type="date" autocomplete="bday" max="${today}">
   <label for="ad">Adresse</label><input id="ad" autocomplete="street-address" maxlength="80" placeholder="Numéro et nom de rue">
   <label for="cp">Code postal</label><input id="cp" inputmode="numeric" autocomplete="postal-code" maxlength="5">
-  <label for="vl">Ville</label><input id="vl" list="cities" autocomplete="address-level2" maxlength="40" placeholder="Ex. : Lyon"><datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist>
+  <label for="vl">Ville</label><input id="vl" autocomplete="address-level2" maxlength="40" placeholder="Ex. : Lyon">
   <label for="tel">Numéro de téléphone</label><input id="tel" type="tel" autocomplete="tel" maxlength="20" placeholder="06 12 34 56 78">
   <label for="m">E-mail</label><input id="m" type="email" autocomplete="email">
   <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="new-password" placeholder="8 caractères minimum">`}
@@ -369,6 +390,7 @@ function auth(){
       if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return;
       err(c==="cdm/not-configured"?"La connexion Google n'est pas encore activée sur ce site.":c==="auth/popup-blocked"?"Le navigateur a bloqué la fenêtre Google. Autorisez les pop-ups puis réessayez.":c==="auth/unauthorized-domain"?"Ce site n'est pas encore autorisé dans Firebase (domaines autorisés).":"La connexion Google a échoué. Réessayez.")
     }finally{gb.disabled=false}};
+  attachSuggest($("#vl"));
   $("#f").onsubmit=async e=>{e.preventDefault();
     const m=$("#m").value.trim().toLowerCase(),pw=$("#pw").value;
     if(!/^\S+@\S+\.\S+$/.test(m))return err("Saisissez une adresse e-mail valide.");
@@ -389,7 +411,8 @@ function auth(){
     if(state.accounts.some(x=>x.email===m))return err("Un compte existe déjà avec cet e-mail. Ouvrez l'onglet Connexion.");
     if(pw.length<8)return err("Le mot de passe comporte 8 caractères minimum.");
     let h;try{h=await mkpw(pw)}catch(x){return err("Impossible de sécuriser le mot de passe sur cet appareil.")}
-    const u={name:pn,lastName:nm,birth:bd,address:ad,cp:cp,phone:tel,email:m,city:vl,area:vl,pw:h};
+    const rc=(await resolveCity(vl,cp))||vl;
+    const u={name:pn,lastName:nm,birth:bd,address:ad,cp:cp,phone:tel,email:m,city:rc,area:rc,pw:h};
     state.accounts.push(u);state.user=u;save();toast("Compte créé. Dernière étape : votre photo.");go("photo")};
 }
 const hx=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
@@ -416,7 +439,7 @@ function edit(){
   <label for="bd">Date de naissance</label><input id="bd" type="date" autocomplete="bday" max="${today}" value="${v("birth")}">
   <label for="ad">Adresse</label><input id="ad" autocomplete="street-address" maxlength="80" value="${v("address")}">
   <label for="cp">Code postal</label><input id="cp" inputmode="numeric" autocomplete="postal-code" maxlength="5" value="${v("cp")}">
-  <label for="vl">Ville</label><input id="vl" list="cities" autocomplete="address-level2" maxlength="40" value="${esc(ucity(u))}"><datalist id="cities">${Object.keys(CITIES).map(c=>`<option value="${c}">`).join("")}</datalist>
+  <label for="vl">Ville</label><input id="vl" autocomplete="address-level2" maxlength="40" value="${esc(ucity(u))}">
   <label for="tel">Numéro de téléphone</label><input id="tel" type="tel" autocomplete="tel" maxlength="20" value="${v("phone")}">
   <label for="m">E-mail</label><input id="m" type="email" autocomplete="email" value="${v("email")}">
   <div class="err" id="e" role="alert"></div><button class="btn solid" type="submit" style="width:100%">Enregistrer les modifications</button></form>
@@ -428,10 +451,12 @@ function edit(){
   <button class="chip" id="back" type="button">Retour au profil</button>`;
   const err=t=>{$("#e").textContent=t},e2=t=>{$("#e2").textContent=t};
   $("#back").onclick=()=>go("profile");
-  $("#f").onsubmit=ev=>{ev.preventDefault();
-    const [pn,nm,bd,ad,cp,tel,mm,vl]=["pn","nm","bd","ad","cp","tel","m","vl"].map(i=>$("#"+i).value.trim()),m=mm.toLowerCase();
+  attachSuggest($("#vl"));
+  $("#f").onsubmit=async ev=>{ev.preventDefault();
+    const [pn,nm,bd,ad,cp,tel,mm,vl0]=["pn","nm","bd","ad","cp","tel","m","vl"].map(i=>$("#"+i).value.trim()),m=mm.toLowerCase();
     const er=vInfo(pn,nm,bd,ad,cp,tel,m);if(er)return err(er);
-    if(vl.length<2)return err("Indiquez votre ville.");
+    if(vl0.length<2)return err("Indiquez votre ville.");
+    const vl=(await resolveCity(vl0,cp))||vl0;
     if(state.accounts.some(x=>x!==u&&x.email===m))return err("Un autre compte utilise déjà cet e-mail.");
     Object.assign(u,{name:pn,lastName:nm,birth:bd,address:ad,cp:cp,phone:tel,email:m,city:vl,area:vl});
     state.ads.forEach(a=>{if(a.mine){a.who=pn;a.area=vl;a.city=vl}});
