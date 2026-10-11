@@ -111,6 +111,7 @@ body.gate nav,body.gate .me{display:none}
 .bub.mine{align-self:flex-end;background:var(--g1);color:#fff;border-color:var(--g1)}
 .bub.them{align-self:flex-start}
 .rate{font-weight:600}.gold{color:var(--gold)}
+.revs{margin:8px 0;font-size:14px}.revs summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}.rv{padding:8px 0;border-top:1px solid var(--line)}
 .stars{display:flex;gap:4px;justify-content:center;margin:6px 0}
 .star{background:none;border:0;font-size:34px;line-height:1;color:var(--line);padding:4px;min-width:44px;min-height:44px;cursor:pointer}
 .star.on{color:var(--gold)}
@@ -175,14 +176,16 @@ const SEED=SHOW_DEMO?state.ads.filter(a=>a.id<100):[];
 if(!SHOW_DEMO)state.ads=state.ads.filter(a=>a.id>=100);
 const vis=c=>SHOW_DEMO||c.remote;
 window.cdmMerge=function(remote){
+  const seen0=window.cdmSeenAds,fresh=seen0?remote.filter(r=>!seen0.has(r.id)):[];window.cdmSeenAds=new Set([...(seen0||[]),...remote.map(r=>r.id)]);
   const em=(state.user&&state.user.email||"").toLowerCase(),map=new Map();
   SEED.forEach(a=>map.set(a.id,a));
   const mig=state.ads.filter(a=>a.id>=100&&a.mine&&a.owner&&!a.sync&&!remote.some(r=>r.id===a.id));mig.forEach(a=>{map.set(a.id,a);if(window.cdmAds&&!a.sync){a.sync=1;window.cdmAds.publish(a).catch(()=>{a.sync=0})}});
   remote.forEach(r=>{r.sync=1;r.mine=!!em&&String(r.owner||"").toLowerCase()===em;map.set(r.id,r)});
   state.ads=[...map.values()].sort((x,y)=>y.id-x.id);
+  const u0=state.user;if(u0&&u0.adAlerts!==false&&fresh.length){const near=fresh.filter(r=>!r.mine&&Date.now()-(r.created||0)<600000&&km(r)<=state.radius);if(near.length){const msg="Nouvelle annonce près de vous : "+near[0].title+(near.length>1?" (+"+(near.length-1)+")":"");toast(msg);try{if("Notification" in window&&Notification.permission==="granted"&&document.hidden)new Notification("CoupDeMain",{body:msg})}catch(x){}}}
   if(["find","home","profile"].includes(state.view)&&state.user)render();
 };
-function loadRemote(){if(window.cdmAds)window.cdmAds.subscribe(window.cdmMerge)}
+function loadRemote(){if(window.cdmAds)window.cdmAds.subscribe(window.cdmMerge);if(window.cdmReviews)window.cdmReviews.subscribe(window.cdmRevMerge)}
 const CITIES={"Paris":[48.8566,2.3522],"Versailles":[48.8049,2.1204],"Saint-Denis":[48.9362,2.3574],"Melun":[48.5408,2.6603],"Orléans":[47.9029,1.9093],"Lyon":[45.764,4.8357],"Villeurbanne":[45.7719,4.8902],"Marseille":[43.2965,5.3698],"Toulouse":[43.6047,1.4442],"Nice":[43.7102,7.262],"Nantes":[47.2184,-1.5536],"Bordeaux":[44.8378,-0.5792],"Lille":[50.6292,3.0573],"Strasbourg":[48.5734,7.7521],"Rennes":[48.1173,-1.6778],"Montpellier":[43.6108,3.8767],"Grenoble":[45.1885,5.7245]};
 const DEP={75:"Paris",69:"Lyon",13:"Marseille",31:"Toulouse",6:"Nice",44:"Nantes",33:"Bordeaux",59:"Lille",67:"Strasbourg",35:"Rennes",34:"Montpellier",38:"Grenoble"};
 const XK="cdm_xc";try{Object.assign(CITIES,JSON.parse(localStorage.getItem(XK)||"{}"))}catch(e){}
@@ -226,8 +229,12 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshGeo
 const km=a=>kmFrom(a,center());
 const RT={1:[4.8,23],2:[4.6,15],3:[5,8],4:[4.7,31],5:[4.9,42],6:[4.5,12],7:[4.4,9],8:[4.8,20],9:[4.7,6]};
 const myRate=id=>{const c=((state.user&&state.user.convs)||[]).find(x=>x.id===id||(x.remote&&x.adId===id));return c&&c.rating?c.rating:null};
-const rateOf=a=>{if(a.mine)return null;const b=RT[a.id]||[0,0],r=myRate(a.id),n=b[1]+(r?1:0);return n?{avg:(b[0]*b[1]+(r?r.stars:0))/n,n}:null};
-const starTxt=a=>{if(a.mine)return "";const r=rateOf(a);return r?` · <span class="rate"><span class="gold">★</span> ${r.avg.toFixed(1).replace(".",",")} (${r.n} avis)</span>`:" · Pas encore d'avis"};
+const REV={};
+window.cdmRevMerge=l=>{Object.keys(REV).forEach(k=>delete REV[k]);l.forEach(r=>{r.stars=Math.max(1,Math.min(5,r.stars|0));(REV[r.adId]=REV[r.adId]||[]).push(r)});if(state.user&&["find","home"].includes(state.view)&&!document.querySelector("details[open],textarea:focus,input:focus"))render()};
+const meEm=()=>((state.user&&state.user.email)||"").toLowerCase();
+const rateOf=a=>{const b=RT[a.id]||[0,0],rv=REV[a.id]||[],r=myRate(a.id),extra=(r&&!rv.some(x=>x.byEmail===meEm()))?r.stars:0,n=b[1]+rv.length+(extra?1:0);return n?{avg:(b[0]*b[1]+rv.reduce((t,x)=>t+x.stars,0)+extra)/n,n}:null};
+const revHtml=a=>{const l=(REV[a.id]||[]).filter(x=>x.text).sort((x,y)=>y.t-x.t);return l.length?`<details class="revs"><summary>Voir les commentaires (${l.length})</summary>${l.slice(0,10).map(x=>`<div class="rv"><b>${esc(x.byName||"Voisin")}</b> <span class="gold">${"★".repeat(x.stars)}</span><div>${esc(x.text)}</div></div>`).join("")}</details>`:""};
+const starTxt=a=>{const r=rateOf(a);if(!r&&a.mine)return "";return r?` · <span class="rate"><span class="gold">★</span> ${r.avg.toFixed(1).replace(".",",")} (${r.n} avis)</span>`:" · Pas encore d'avis"};
 const $=s=>document.querySelector(s),main=$("#main");
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function save(){try{localStorage.setItem("cdm",JSON.stringify({user:state.user,mine:state.ads.filter(a=>a.mine),accounts:state.accounts},(k,v)=>k==="img"?undefined:v))}catch(e){}}
@@ -302,7 +309,7 @@ function find(){
   <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="${Math.max(100,state.radius)}" step="1" value="${state.radius}"></form>
   <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
   ${list.length?list.map(a=>`<article class="card"><div class="item"><div class="av" aria-hidden="true">${a.mine&&state.user&&state.user.photo?'<img src="'+state.user.photo+'" alt="">':EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${km(a)} km${starTxt(a)}</div></div></div>
-  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span><button class="chip" type="button" data-del="'+a.id+'">Supprimer</button>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<div class="card"><p class="empty" style="margin:0 0 10px">Aucune annonce dans un rayon de '+state.radius+' km autour de '+esc(center())+'.</p>'+(pool.length?'<p class="meta">La plus proche est à '+km(pool[0])+' km.</p><button class="btn solid" id="wd" type="button" style="width:100%">Élargir à '+Math.max(km(pool[0]),state.radius+1)+' km</button>':'<p class="meta">Aucune annonce publiée pour le moment.</p>')+'</div>'}`;
+  <p>${esc(a.desc)}</p>${revHtml(a)}<div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span><button class="chip" type="button" data-del="'+a.id+'">Supprimer</button>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<div class="card"><p class="empty" style="margin:0 0 10px">Aucune annonce dans un rayon de '+state.radius+' km autour de '+esc(center())+'.</p>'+(pool.length?'<p class="meta">La plus proche est à '+km(pool[0])+' km.</p><button class="btn solid" id="wd" type="button" style="width:100%">Élargir à '+Math.max(km(pool[0]),state.radius+1)+' km</button>':'<p class="meta">Aucune annonce publiée pour le moment.</p>')+'</div>'}`;
   main.querySelectorAll(".chip[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;find()});
   const cq=$("#cq");if(cq)cq.onclick=()=>{state.q="";find()};
   $("#cf2").onsubmit=async e=>{e.preventDefault();const v=$("#city").value.trim();if(!v)return;let k=Object.keys(CITIES).find(c=>norm(c)===norm(v));
@@ -346,11 +353,15 @@ function profile(){
     <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)"><div style="min-width:0"><b>${EMO[a.cat]} ${esc(a.title)}</b><div class="meta">${esc(a.price)} · ${esc(cityOf(a))}</div></div><button class="chip" type="button" data-del="${a.id}" style="flex:none">Supprimer</button></div>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
     <div class="card"><h3>Paramètres</h3>
     <label class="set" for="sg" style="margin:0;font-weight:400"><span><b>Localisation</b><small>${state.user.geo&&state.user.geoCity?"Active · position du téléphone : "+esc(state.user.geoName||state.user.geoCity):"Utiliser la position de votre téléphone pour trouver les annonces autour de vous"}</small></span><input type="checkbox" class="sw" id="sg" role="switch" ${state.user.geo?"checked":""}></label>
-    <label class="set" for="sn" style="margin:0;font-weight:400"><span><b>Notifications</b><small>Alertes pour les nouveaux messages</small></span><input type="checkbox" class="sw" id="sn" role="switch" ${state.user.notif!==false?"checked":""}></label></div>
+    <label class="set" for="sn" style="margin:0;font-weight:400"><span><b>Notifications</b><small>Alertes pour les nouveaux messages</small></span><input type="checkbox" class="sw" id="sn" role="switch" ${state.user.notif!==false?"checked":""}></label>
+    <label class="set" for="sa" style="margin:0;font-weight:400"><span><b>Nouvelles annonces</b><small>Alerte quand une annonce est publiée près de vous (app ouverte)</small></span><input type="checkbox" class="sw" id="sa" role="switch" ${state.user.adAlerts!==false?"checked":""}></label></div>
     <button class="btn solid" id="out" style="width:100%">Se déconnecter</button><button class="btn" id="rm" style="width:100%;margin-top:8px;background:transparent;color:var(--err);border:1px solid var(--err)">Supprimer mon compte</button>`;
     $("#sn").onchange=e=>{const u=state.user;u.notif=e.target.checked;save();badge();
       if(u.notif&&"Notification" in window&&Notification.permission==="default")try{Notification.requestPermission()}catch(x){}
       toast(u.notif?"Notifications activées":"Notifications désactivées")};
+    $("#sa").onchange=e=>{const u=state.user;u.adAlerts=e.target.checked;save();
+      if(u.adAlerts&&"Notification" in window&&Notification.permission==="default")try{Notification.requestPermission()}catch(x){}
+      toast(u.adAlerts?"Alertes d'annonces activées":"Alertes d'annonces désactivées")};
     $("#sg").onchange=e=>{const u=state.user,sw=e.target;
       if(!sw.checked){u.geo=false;u.geoCity="";u.geoPos=null;u.geoName="";state.center=null;save();toast("Localisation désactivée");return profile()}
       if(!navigator.geolocation){sw.checked=false;return toast("La localisation n'est pas disponible sur cet appareil")}
@@ -528,7 +539,7 @@ function chat(){
   <label for="rc" class="sr">Commentaire</label><textarea id="rc" rows="2" maxlength="200" placeholder="Un commentaire (facultatif)">${esc(txt)}</textarea>
   <div class="err" id="re" role="alert"></div><button class="btn solid" id="rs" type="button" style="width:100%">Publier mon avis</button>`;
     $("#rp").querySelectorAll(".star").forEach(b=>b.onclick=()=>{txt=$("#rc").value;stars=+b.dataset.s;panel()});
-    $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}cur().rating={stars,text:$("#rc").value.trim()};save();toast("Merci pour votre avis !");chat()}};
+    $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}cur().rating={stars,text:$("#rc").value.trim()};save();const cc=cur();if(window.cdmReviews&&u.email){const em=u.email.toLowerCase();window.cdmReviews.publish({adId:String(cc.adId||cc.id),stars,text:cc.rating.text,byEmail:em,byName:u.name||"Voisin",t:Date.now()}).catch(()=>toast("Avis enregistré sur votre appareil seulement"))}toast("Merci pour votre avis !");chat()}};
   $("#rt").onclick=()=>{if(!cur()){toast("Envoyez d'abord un message pour pouvoir noter.");return}const r=$("#rp");r.hidden=!r.hidden;if(!r.hidden)panel()};
   $("#pb").onclick=()=>{if(!real){toast("Les photos sont disponibles dans les vraies conversations");return}$("#pf").click()};
   $("#pf").onchange=async ev=>{const f=ev.target.files[0];ev.target.value="";if(!f)return;
@@ -608,6 +619,10 @@ window.cdmAds={
   subscribe:cb=>{if(unsub)unsub();unsub=onSnapshot(collection(db,"ads"),snap=>{window.cdmRemoteOk=true;cb(snap.docs.map(d=>d.data()).filter(a=>a&&a.id))},()=>{window.cdmRemoteOk=false})},
   remove:id=>deleteDoc(doc(db,"ads",String(id))),
   removeMine:async email=>{try{const q=await getDocs(query(collection(db,"ads"),where("owner","==",String(email||"").toLowerCase())));await Promise.all(q.docs.map(d=>deleteDoc(d.ref)))}catch(e){}}
+};
+window.cdmReviews={
+  publish:r=>setDoc(doc(db,"reviews",r.adId+"_"+r.byEmail.replace(/[^a-z0-9]/g,"_")),r),
+  subscribe:cb=>onSnapshot(collection(db,"reviews"),s=>cb(s.docs.map(d=>d.data()).filter(r=>r&&r.adId)),()=>{})
 };
 window.cdmMsgs={
   send:m=>setDoc(doc(db,"msgs",m.t+"_"+Math.random().toString(36).slice(2,8)),m),
