@@ -108,7 +108,7 @@ body.gate nav,body.gate .me{display:none}
 .ms{display:flex;flex-direction:column;gap:8px;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:52vh;min-height:30vh;padding:8px 2px}
 .bub{flex:none;width:fit-content;max-width:82%;padding:10px 14px;border-radius:18px;background:var(--card);border:1px solid var(--line);overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}
 .bub small{display:block;font-size:11px;opacity:.65;margin-top:2px}
-.bub.me{align-self:flex-end;background:var(--g1);color:#fff;border-color:var(--g1)}
+.bub.mine{align-self:flex-end;background:var(--g1);color:#fff;border-color:var(--g1)}
 .bub.them{align-self:flex-start}
 .rate{font-weight:600}.gold{color:var(--gold)}
 .stars{display:flex;gap:4px;justify-content:center;margin:6px 0}
@@ -508,7 +508,7 @@ function chat(){
   const who=c?c.who:ad.who,title=c?c.title:ad.title,cat=c?c.cat:ad.cat,price=ad?ad.price:"";
   if(c&&c.unread)c.unread=false;if(c&&c.remote){u.seen=u.seen||{};u.seen[cid]=Date.now()}save();badge();
   const cur=()=>u.convs.find(x=>x.id===cid)||c;
-  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from}">${okImg(m.img)?'<img class="mimg" src="'+m.img+'" alt="Photo envoyée">':""}${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.querySelectorAll(".mimg").forEach(i=>i.onclick=()=>showImg(i.src));el.scrollTop=el.scrollHeight};
+  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from==="me"?"mine":"them"}">${okImg(m.img)?'<img class="mimg" src="'+m.img+'" alt="Photo envoyée">':""}${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.querySelectorAll(".mimg").forEach(i=>i.onclick=()=>showImg(i.src));el.scrollTop=el.scrollHeight};
   main.innerHTML=`<div class="chat"><div class="item" style="align-items:center;margin-bottom:8px"><button class="chip" id="bk" type="button" aria-label="Retour aux messages">←</button><div class="av" aria-hidden="true">${EMO[cat]}</div><div><h3>${esc(who)}</h3><div class="meta">${esc(title)}${price?" · "+esc(price):""}${ad?starTxt(ad):""}</div></div><button class="chip" id="rt" type="button" style="margin-left:auto">${c&&c.rating?"Modifier ma note":"Noter"}</button></div>
   <div id="rp" class="card" hidden></div>
   <div id="ms" class="ms" aria-live="polite"></div>
