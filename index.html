@@ -199,7 +199,8 @@ function attachSuggest(inp,pick){if(!inp)return;const box=document.createElement
     const loc=Object.keys(CITIES).filter(c=>norm(c).startsWith(norm(q))).slice(0,3).map(c=>({nom:c,lat:CITIES[c][0],lon:CITIES[c][1],dep:"",known:1}));show(loc);
     const r=await geoSearch(q);if(me!==seq)return;show(r.concat(loc.filter(l=>!r.some(x=>norm(x.nom)===norm(l.nom)))).slice(0,6))};
   inp.addEventListener("input",()=>{clearTimeout(t);t=setTimeout(run,220)});
-  box.addEventListener("click",e=>{const b=e.target.closest(".sugi");if(!b||!items[+b.dataset.i])return;const c=items[+b.dataset.i];const k=c.known?c.nom:addCity(c.nom,c.lat,c.lon,c.dep);inp.value=k;show([]);if(pick)pick(k)})}
+  const choose=e=>{const b=e.target.closest&&e.target.closest(".sugi");if(!b||!items[+b.dataset.i])return;e.preventDefault();const c=items[+b.dataset.i];const k=c.known?c.nom:addCity(c.nom,c.lat,c.lon,c.dep);inp.value=k;show([]);if(pick)pick(k)};
+  box.addEventListener("pointerdown",choose);box.addEventListener("click",choose)}
 let homeTried="";
 function ensureHome(){const u=state.user;if(!u)return;const c=ucity(u);if(!c||homeTried===c||Object.keys(CITIES).some(x=>norm(x)===norm(c)))return;homeTried=c;
   resolveCity(c,u.cp).then(k=>{if(k&&["home","find","profile"].includes(state.view))render()})}
@@ -235,6 +236,10 @@ function remine(){const em=(state.user&&state.user.email||"").toLowerCase();stat
 function shrinkImg(file,max,q){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{let w=im.width,h=im.height;const r=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*r));h=Math.max(1,Math.round(h*r));const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);res(c.toDataURL("image/jpeg",q))};im.src=fr.result};fr.readAsDataURL(file)})}
 const okImg=d=>typeof d==="string"&&/^data:image\/(jpeg|png|webp);base64,/.test(d);
 function showImg(src){const o=document.createElement("div");o.className="lb";o.innerHTML='<img alt="Photo">';o.firstChild.src=src;o.onclick=()=>o.remove();document.body.appendChild(o)}
+function delAd(id,after){if(!confirm("Supprimer cette annonce pour tout le monde ?"))return;
+  state.ads=state.ads.filter(x=>x.id!==id);save();
+  if(window.cdmAds)window.cdmAds.remove(id).catch(()=>toast("Suppression en ligne impossible : vérifiez la connexion"));
+  toast("Annonce supprimée");if(after)after()}
 const meKey=()=>String(state.user&&(state.user.email||state.user.name)||"").toLowerCase();
 const isReal=a=>!!(a&&a.owner&&String(a.owner).toLowerCase()!==meKey());
 const convIdFor=a=>isReal(a)?a.id+"_"+meKey():a.id;
@@ -287,16 +292,17 @@ function home(){
   $("#go").onclick=()=>go("offer");
 }
 function find(){
-  const list=state.ads.filter(a=>(state.filter==="Tous"||a.cat===state.filter)&&km(a)<=state.radius&&(!state.q||(a.title+" "+a.desc+" "+a.cat).toLowerCase().includes(state.q.toLowerCase()))).sort((x,y)=>km(x)-km(y));
+  const pool=state.ads.filter(a=>(state.filter==="Tous"||a.cat===state.filter)&&(!state.q||(a.title+" "+a.desc+" "+a.cat).toLowerCase().includes(state.q.toLowerCase()))).sort((x,y)=>km(x)-km(y));
+  const list=pool.filter(a=>km(a)<=state.radius);
   main.innerHTML=`<h2 class="t">Trouver de l'aide</h2>
   ${state.q?'<p class="meta">Résultats pour « '+esc(state.q)+' » <button class="chip" id="cq" type="button">Effacer</button></p>':""}
   <form class="card" id="cf2" style="padding:14px" novalidate><label for="city" style="margin:0 0 6px">Ville</label><div class="row2" style="flex-wrap:nowrap"><input id="city" value="${esc(center())}" placeholder="Tapez une ville" autocomplete="off"><button class="btn solid" type="submit">OK</button></div>
   <div class="err" id="ce" role="alert"></div>
   ${center()!==baseCity()?'<button class="chip" id="hm" type="button" style="margin-bottom:8px">Revenir à '+esc(baseCity())+'</button>':""}
-  <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="100" step="1" value="${state.radius}"></form>
+  <label for="rad" style="margin:8px 0 6px">Rayon autour de ${esc(center())} : <b id="rv">${state.radius} km</b></label><input id="rad" type="range" min="1" max="${Math.max(100,state.radius)}" step="1" value="${state.radius}"></form>
   <div class="chips" role="group" aria-label="Catégories">${["Tous",...CATS].map(c=>`<button class="chip" aria-pressed="${c===state.filter}" data-c="${esc(c)}">${c==="Tous"?"Tous":EMO[c]+" "+esc(c)}</button>`).join("")}</div>
   ${list.length?list.map(a=>`<article class="card"><div class="item"><div class="av" aria-hidden="true">${a.mine&&state.user&&state.user.photo?'<img src="'+state.user.photo+'" alt="">':EMO[a.cat]}</div><div><h3>${esc(a.title)}</h3><div class="meta">${esc(a.who)} · ${esc(cityOf(a))} · à ${km(a)} km${starTxt(a)}</div></div></div>
-  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span><button class="chip" type="button" data-del="'+a.id+'">Supprimer</button>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<p class="empty">Aucune annonce trouvée dans un rayon de ${state.radius} km. Agrandissez le rayon ou changez de catégorie.</p>'}`;
+  <p>${esc(a.desc)}</p><div class="row"><span class="price">${esc(a.price)}</span>${a.mine?'<span class="meta">Votre annonce</span><button class="chip" type="button" data-del="'+a.id+'">Supprimer</button>':`<button class="btn solid" data-id="${a.id}">${(state.user&&(state.user.convs||[]).some(c=>c.id===convIdFor(a)))?"Ouvrir la conversation":"Contacter"}</button>`}</div></article>`).join(""):'<div class="card"><p class="empty" style="margin:0 0 10px">Aucune annonce dans un rayon de '+state.radius+' km autour de '+esc(center())+'.</p>'+(pool.length?'<p class="meta">La plus proche est à '+km(pool[0])+' km.</p><button class="btn solid" id="wd" type="button" style="width:100%">Élargir à '+Math.max(km(pool[0]),state.radius+1)+' km</button>':'<p class="meta">Aucune annonce publiée pour le moment.</p>')+'</div>'}`;
   main.querySelectorAll(".chip[data-c]").forEach(b=>b.onclick=()=>{state.filter=b.dataset.c;find()});
   const cq=$("#cq");if(cq)cq.onclick=()=>{state.q="";find()};
   $("#cf2").onsubmit=async e=>{e.preventDefault();const v=$("#city").value.trim();if(!v)return;let k=Object.keys(CITIES).find(c=>norm(c)===norm(v));
@@ -304,8 +310,8 @@ function find(){
     state.center=k;find()};
   attachSuggest($("#city"),k=>{state.center=k;find()});
   const hm=$("#hm");if(hm)hm.onclick=()=>{state.center=null;find()};
-  main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Supprimer cette annonce pour tout le monde ?"))return;const id=+b.dataset.del;
-    state.ads=state.ads.filter(x=>x.id!==id);save();if(window.cdmAds)window.cdmAds.remove(id).catch(()=>toast("Suppression en ligne impossible : vérifiez la connexion"));toast("Annonce supprimée");find()});
+  main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delAd(+b.dataset.del,find));
+  const wd=$("#wd");if(wd)wd.onclick=()=>{state.radius=Math.max(km(pool[0]),state.radius+1);find()};
   $("#rad").oninput=e=>{$("#rv").textContent=e.target.value+" km"};
   $("#rad").onchange=e=>{state.radius=+e.target.value;find()};
   main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{
@@ -337,7 +343,7 @@ function profile(){
   if(state.user){const mine=state.ads.filter(a=>a.mine);
     main.innerHTML=`<h2 class="t">Mon profil</h2><div class="card"><div class="item">${av(state.user)}<div><h3>${esc(state.user.name)}</h3></div></div><button class="btn solid" id="ph" style="width:100%;margin-top:14px">${state.user.photo?"Changer ma photo":"Ajouter une photo"}</button><button class="btn" id="ed" style="width:100%;margin-top:8px;background:var(--mint);color:var(--ink)">Modifier mes informations</button></div>
     <div class="card"><h3>Mes informations</h3><p class="meta">${esc(state.user.name)} ${esc(state.user.lastName||"")}<br>${esc(state.user.email||"")}<br>${esc(state.user.phone||"")}<br>${esc(state.user.address||"")}, ${esc(state.user.cp||"")} ${esc(ucity(state.user))}${state.user.birth?"<br>Né(e) le "+new Date(state.user.birth+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}</p></div>
-    <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<p>${EMO[a.cat]} ${esc(a.title)} <span class="meta">· ${esc(a.price)}</span></p>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
+    <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)"><div style="min-width:0"><b>${EMO[a.cat]} ${esc(a.title)}</b><div class="meta">${esc(a.price)} · ${esc(cityOf(a))}</div></div><button class="chip" type="button" data-del="${a.id}" style="flex:none">Supprimer</button></div>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
     <div class="card"><h3>Paramètres</h3>
     <label class="set" for="sg" style="margin:0;font-weight:400"><span><b>Localisation</b><small>${state.user.geo&&state.user.geoCity?"Active · position du téléphone : "+esc(state.user.geoName||state.user.geoCity):"Utiliser la position de votre téléphone pour trouver les annonces autour de vous"}</small></span><input type="checkbox" class="sw" id="sg" role="switch" ${state.user.geo?"checked":""}></label>
     <label class="set" for="sn" style="margin:0;font-weight:400"><span><b>Notifications</b><small>Alertes pour les nouveaux messages</small></span><input type="checkbox" class="sw" id="sn" role="switch" ${state.user.notif!==false?"checked":""}></label></div>
@@ -352,6 +358,7 @@ function profile(){
       navigator.geolocation.getCurrentPosition(pos=>{setGeo(pos);state.center=null;save();toast("Localisation activée : "+(u.geoName||u.geoCity));profile()},
       err=>{sw.checked=false;toast(err&&err.code===1?"Position refusée : réglages iPhone > Confidentialité > Service de localisation > Safari":"Position introuvable, réessayez dehors ou avec le GPS activé")},
       {enableHighAccuracy:true,timeout:15000,maximumAge:0})};
+    main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delAd(+b.dataset.del,profile));
     $("#ph").onclick=()=>go("photo");
     $("#ed").onclick=()=>go("edit");
     $("#rm").onclick=()=>go("delAcc");
