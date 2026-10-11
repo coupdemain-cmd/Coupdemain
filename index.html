@@ -131,6 +131,9 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--g1);min-
 .sw:checked{background:var(--g2)}.sw:checked:after{transform:translateX(22px)}
 .sug{display:flex;flex-direction:column;margin:6px 0 8px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}.sug[hidden]{display:none}
 .sugi{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;padding:10px 14px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;color:inherit;text-align:left;font:inherit;box-shadow:none}.sugi:first-child{border-top:0}.sugi span{color:var(--mute);font-size:13px;flex:none}
+.mimg{display:block;max-width:100%;max-height:260px;border-radius:12px;margin:0 0 6px;cursor:zoom-in}
+.mf .chip{flex:none;min-height:44px;min-width:46px;font-size:20px;padding:0 12px}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:99;padding:12px;cursor:zoom-out}.lb img{max-width:100%;max-height:100%;border-radius:8px}
 .hero .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.65);box-shadow:none}
 </style>
 </head>
@@ -226,9 +229,12 @@ const rateOf=a=>{if(a.mine)return null;const b=RT[a.id]||[0,0],r=myRate(a.id),n=
 const starTxt=a=>{if(a.mine)return "";const r=rateOf(a);return r?` · <span class="rate"><span class="gold">★</span> ${r.avg.toFixed(1).replace(".",",")} (${r.n} avis)</span>`:" · Pas encore d'avis"};
 const $=s=>document.querySelector(s),main=$("#main");
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function save(){try{localStorage.setItem("cdm",JSON.stringify({user:state.user,mine:state.ads.filter(a=>a.mine),accounts:state.accounts}))}catch(e){}}
+function save(){try{localStorage.setItem("cdm",JSON.stringify({user:state.user,mine:state.ads.filter(a=>a.mine),accounts:state.accounts},(k,v)=>k==="img"?undefined:v))}catch(e){}}
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
 function remine(){const em=(state.user&&state.user.email||"").toLowerCase();state.ads.forEach(a=>{if(a.owner!==undefined)a.mine=!!em&&String(a.owner).toLowerCase()===em})}
+function shrinkImg(file,max,q){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{let w=im.width,h=im.height;const r=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*r));h=Math.max(1,Math.round(h*r));const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);res(c.toDataURL("image/jpeg",q))};im.src=fr.result};fr.readAsDataURL(file)})}
+const okImg=d=>typeof d==="string"&&/^data:image\/(jpeg|png|webp);base64,/.test(d);
+function showImg(src){const o=document.createElement("div");o.className="lb";o.innerHTML='<img alt="Photo">';o.firstChild.src=src;o.onclick=()=>o.remove();document.body.appendChild(o)}
 const meKey=()=>String(state.user&&(state.user.email||state.user.name)||"").toLowerCase();
 const isReal=a=>!!(a&&a.owner&&String(a.owner).toLowerCase()!==meKey());
 const convIdFor=a=>isReal(a)?a.id+"_"+meKey():a.id;
@@ -249,7 +255,7 @@ window.cdmMsgIn=function(list,init){
     const prevIn=old[id]?old[id].msgs.filter(x=>x.from==="them").length:0;
     const who=pm?pm.fromName:first.toName;
     if(!init&&ins.length>prevIn&&!viewing)fresh.push(who||"un voisin");
-    return {id:isNaN(+id)?id:id,adId:last.adId,remote:true,peer,who:who||peer,title:last.adTitle,cat:last.adCat,msgs:arr.map(x=>({from:x.from===m?"me":"them",text:x.text,t:x.t})),unread,rating:old[id]&&old[id].rating}
+    return {id:isNaN(+id)?id:id,adId:last.adId,remote:true,peer,who:who||peer,title:last.adTitle,cat:last.adCat,msgs:arr.map(x=>({from:x.from===m?"me":"them",text:x.text||"",t:x.t,img:x.img||""})),unread,rating:old[id]&&old[id].rating}
   });
   u.convs=keep.concat(nc);save();badge();
   if(fresh.length&&u.notif!==false){toast("Nouveau message de "+fresh[0]);try{if("Notification" in window&&Notification.permission==="granted"&&document.hidden)new Notification("CoupDeMain",{body:"Nouveau message de "+fresh[0]})}catch(x){}}
@@ -329,7 +335,7 @@ function offer(){
 }
 function profile(){
   if(state.user){const mine=state.ads.filter(a=>a.mine);
-    main.innerHTML=`<h2 class="t">Mon profil</h2><div class="card"><div class="item">${av(state.user)}<div><h3>${esc(state.user.name)}</h3><div class="meta">${esc(ucity(state.user))}</div></div></div><button class="btn solid" id="ph" style="width:100%;margin-top:14px">${state.user.photo?"Changer ma photo":"Ajouter une photo"}</button><button class="btn" id="ed" style="width:100%;margin-top:8px;background:var(--mint);color:var(--ink)">Modifier mes informations</button></div>
+    main.innerHTML=`<h2 class="t">Mon profil</h2><div class="card"><div class="item">${av(state.user)}<div><h3>${esc(state.user.name)}</h3></div></div><button class="btn solid" id="ph" style="width:100%;margin-top:14px">${state.user.photo?"Changer ma photo":"Ajouter une photo"}</button><button class="btn" id="ed" style="width:100%;margin-top:8px;background:var(--mint);color:var(--ink)">Modifier mes informations</button></div>
     <div class="card"><h3>Mes informations</h3><p class="meta">${esc(state.user.name)} ${esc(state.user.lastName||"")}<br>${esc(state.user.email||"")}<br>${esc(state.user.phone||"")}<br>${esc(state.user.address||"")}, ${esc(state.user.cp||"")} ${esc(ucity(state.user))}${state.user.birth?"<br>Né(e) le "+new Date(state.user.birth+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}</p></div>
     <div class="card"><h3>Mes annonces (${mine.length})</h3>${mine.length?mine.map(a=>`<p>${EMO[a.cat]} ${esc(a.title)} <span class="meta">· ${esc(a.price)}</span></p>`).join(""):'<p class="meta">Vous n\'avez pas encore publié d\'annonce.</p>'}</div>
     <div class="card"><h3>Paramètres</h3>
@@ -490,7 +496,7 @@ const hh=t=>new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-dig
 function badge(){const u=state.user,b=$("#nbd");if(b)b.hidden=!(u&&u.notif!==false&&(u.convs||[]).filter(vis).some(c=>c.unread))}
 function inbox(){
   const u=state.user,cs=(u.convs||[]).filter(vis).sort((a,b)=>b.msgs[b.msgs.length-1].t-a.msgs[a.msgs.length-1].t);
-  main.innerHTML=`<h2 class="t">Messages</h2>${cs.length?cs.map(c=>{const l=c.msgs[c.msgs.length-1];return `<button class="card item rc" data-id="${c.id}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[c.cat]}</div><div><h3>${esc(c.who)}${c.unread?' <span class="price">Nouveau</span>':""}</h3><div class="meta">${esc(c.title)}</div><div class="meta">${esc((l.from==="me"?"Vous : ":"")+l.text.slice(0,60))}</div></div></button>`}).join(""):`<p class="empty">Aucune conversation pour le moment. Touchez « Contacter » sur une annonce pour écrire à un voisin.</p><button class="btn solid" id="gf" style="width:100%">Trouver de l'aide</button>`}`;
+  main.innerHTML=`<h2 class="t">Messages</h2>${cs.length?cs.map(c=>{const l=c.msgs[c.msgs.length-1];return `<button class="card item rc" data-id="${c.id}" style="width:100%;text-align:left;color:inherit"><div class="av" aria-hidden="true">${EMO[c.cat]}</div><div><h3>${esc(c.who)}${c.unread?' <span class="price">Nouveau</span>':""}</h3><div class="meta">${esc(c.title)}</div><div class="meta">${esc((l.from==="me"?"Vous : ":"")+(l.img&&!l.text?"📷 Photo":l.text).slice(0,60))}</div></div></button>`}).join(""):`<p class="empty">Aucune conversation pour le moment. Touchez « Contacter » sur une annonce pour écrire à un voisin.</p><button class="btn solid" id="gf" style="width:100%">Trouver de l'aide</button>`}`;
   main.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const v=b.dataset.id;state.chatId=/^\d+$/.test(v)?+v:v;go("chat")});
   const g=$("#gf");if(g)g.onclick=()=>go("find");
 }
@@ -502,11 +508,11 @@ function chat(){
   const who=c?c.who:ad.who,title=c?c.title:ad.title,cat=c?c.cat:ad.cat,price=ad?ad.price:"";
   if(c&&c.unread)c.unread=false;if(c&&c.remote){u.seen=u.seen||{};u.seen[cid]=Date.now()}save();badge();
   const cur=()=>u.convs.find(x=>x.id===cid)||c;
-  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from}">${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.scrollTop=el.scrollHeight};
+  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from}">${okImg(m.img)?'<img class="mimg" src="'+m.img+'" alt="Photo envoyée">':""}${esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.querySelectorAll(".mimg").forEach(i=>i.onclick=()=>showImg(i.src));el.scrollTop=el.scrollHeight};
   main.innerHTML=`<div class="chat"><div class="item" style="align-items:center;margin-bottom:8px"><button class="chip" id="bk" type="button" aria-label="Retour aux messages">←</button><div class="av" aria-hidden="true">${EMO[cat]}</div><div><h3>${esc(who)}</h3><div class="meta">${esc(title)}${price?" · "+esc(price):""}${ad?starTxt(ad):""}</div></div><button class="chip" id="rt" type="button" style="margin-left:auto">${c&&c.rating?"Modifier ma note":"Noter"}</button></div>
   <div id="rp" class="card" hidden></div>
   <div id="ms" class="ms" aria-live="polite"></div>
-  <form id="mf" class="mf"><label for="mt" class="sr">Votre message</label><input id="mt" maxlength="300" autocomplete="off" placeholder="Écrire un message" value="${c?"":esc("Bonjour "+who+", votre annonce « "+title+" » m'intéresse. Êtes-vous disponible cette semaine ?")}"><button class="btn solid" type="submit">Envoyer</button></form>
+  <form id="mf" class="mf"><label for="mt" class="sr">Votre message</label><button class="chip" type="button" id="pb" aria-label="Envoyer une photo">📷</button><input type="file" id="pf" accept="image/*" hidden><input id="mt" maxlength="300" autocomplete="off" placeholder="Écrire un message" value="${c?"":esc("Bonjour "+who+", votre annonce « "+title+" » m'intéresse. Êtes-vous disponible cette semaine ?")}"><button class="btn solid" type="submit">Envoyer</button></form>
   <p class="note">${real?"Messagerie en direct : votre correspondant reçoit vos messages et vous répond ici. ":"Prototype : les réponses sont simulées. "}Le paiement se fait sur place : ne partagez jamais vos coordonnées bancaires.</p></div>`;
   draw();state.drawChat=draw;
   $("#bk").onclick=()=>{state.drawChat=null;go("inbox")};
@@ -517,6 +523,14 @@ function chat(){
     $("#rp").querySelectorAll(".star").forEach(b=>b.onclick=()=>{txt=$("#rc").value;stars=+b.dataset.s;panel()});
     $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}cur().rating={stars,text:$("#rc").value.trim()};save();toast("Merci pour votre avis !");chat()}};
   $("#rt").onclick=()=>{if(!cur()){toast("Envoyez d'abord un message pour pouvoir noter.");return}const r=$("#rp");r.hidden=!r.hidden;if(!r.hidden)panel()};
+  $("#pb").onclick=()=>{if(!real){toast("Les photos sont disponibles dans les vraies conversations");return}$("#pf").click()};
+  $("#pf").onchange=async ev=>{const f=ev.target.files[0];ev.target.value="";if(!f)return;
+    if(!window.cdmMsgs){toast("Messagerie indisponible pour le moment");return}
+    toast("Envoi de la photo…");
+    try{let d=await shrinkImg(f,900,.72);if(d.length>700000)d=await shrinkImg(f,640,.6);if(d.length>900000){toast("Photo trop lourde, choisissez-en une autre");return}
+      const cc=cur(),peer=cc&&cc.peer?cc.peer:String(ad.owner).toLowerCase();
+      await window.cdmMsgs.send({cid:String(cid),adId:ad?ad.id:(cc||c).adId,adTitle:title,adCat:cat,from:meKey(),fromName:u.name||"",to:peer,toName:who||"",text:"",img:d,t:Date.now()})}
+    catch(x){toast("Photo non envoyée : vérifiez la connexion")}};
   $("#mf").onsubmit=e=>{e.preventDefault();const t=$("#mt").value.trim();if(!t)return;
     if(real){const peer=c&&c.peer?c.peer:String(ad.owner).toLowerCase();
       if(!window.cdmMsgs){toast("Messagerie indisponible pour le moment");return}
