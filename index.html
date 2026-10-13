@@ -301,7 +301,7 @@ function drawVb(){const el=$("#vb");if(!el)return;const u=state.user;
   $("#vs").onclick=async()=>{if(!window.cdmAuth)return toast(noSvc);try{await window.cdmAuth.verifyMail();toast("E-mail renvoyé")}catch(x){toast(authErr(x))}}}
 
 /* ====== MENTIONS À COMPLÉTER : identité de l'éditeur de l'application ====== */
-const LEGAL={editor:"Bilal Rouddan",email:"uncoupdemain.info@gmail.com",updated:"11 octobre 2026"};
+const LEGAL={editor:"Massinissa Maddour",email:"uncoupdemain.info@gmail.com",updated:"11 octobre 2026"};
 /* ========================================================================= */
 const LEGAL_TXT={
 faq:{t:"Aide et questions fréquentes",h:()=>`<h4>Comment trouver un coup de main ?</h4><p>Dans « Trouver », parcourez les annonces autour de vous, touchez « Contacter », puis proposez un rendez-vous dans la conversation.</p><h4>Comment publier une annonce ?</h4><p>Onglet « Proposer » : choisissez si vous offrez ou demandez de l'aide, la catégorie, puis le tarif.</p><h4>Comment payer ?</h4><p>Le paiement se fait sur place, entre vous. Ne payez jamais à l'avance et ne donnez jamais vos coordonnées bancaires.</p><h4>Comment laisser un avis ?</h4><p>Après un rendez-vous accepté et terminé, un bouton « Noter » apparaît dans la conversation.</p><h4>Comment signaler ou bloquer quelqu'un ?</h4><p>Dans une conversation, touchez « Signaler » ou « Bloquer ». Pour une annonce, utilisez le bouton de signalement sur l'annonce.</p><h4>Un problème ?</h4><p>Écrivez-nous à ${esc(LEGAL.email)}.</p>`},
