@@ -16,9 +16,13 @@
 <style>
 :root{--bg:#f6f7f6;--card:#fff;--ink:#111513;--mute:#5b655f;--g1:#0a2a20;--g2:#178a42;--btn:#2ac45e;--mint:#eceeed;--on-btn:#04140a;--gold:#f2b33d;--line:#e2e5e3;--err:#b3261e;--sh:0 1px 2px rgba(14,59,46,.05);--float:0 14px 32px -14px rgba(14,59,46,.4);--r:18px;--disp:"Bricolage Grotesque","Trebuchet MS","Segoe UI",system-ui,sans-serif;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e100f;--card:#171a18;--ink:#eef1ef;--mute:#a0aaa4;--btn:#2ac45e;--mint:#222624;--line:#2a2e2c;--sh:none;--float:0 14px 32px -14px rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e100f;--card:#171a18;--ink:#eef1ef;--mute:#a0aaa4;--btn:#2ac45e;--mint:#222624;--line:#2a2e2c;--sh:none;--float:0 14px 32px -14px rgba(0,0,0,.8);color-scheme:dark}
+:root[data-theme="dark"] .mmt{filter:brightness(.75) contrast(1.05)}:root[data-theme="dark"] .price{color:#4ddf7f}
+.warn{border-left:4px solid var(--gold)}
+
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{zoom:.9;margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{zoom:var(--z,.9);margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 .app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 16px 120px}
 header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;margin:0 -16px 20px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .logo{flex:none;width:38px;height:38px;display:block}.logo svg{display:block;width:100%;height:100%}
@@ -297,6 +301,7 @@ function drawVb(){const el=$("#vb");if(!el)return;const u=state.user;
 const LEGAL={editor:"[Nom de l'éditeur de l'application]",email:"[adresse e-mail de contact]",updated:"11 octobre 2026"};
 /* ========================================================================= */
 const LEGAL_TXT={
+faq:{t:"Aide et questions fréquentes",h:()=>`<h4>Comment trouver un coup de main ?</h4><p>Dans « Trouver », parcourez les annonces autour de vous, touchez « Contacter », puis proposez un rendez-vous dans la conversation.</p><h4>Comment publier une annonce ?</h4><p>Onglet « Proposer » : choisissez si vous offrez ou demandez de l'aide, la catégorie, puis le tarif.</p><h4>Comment payer ?</h4><p>Le paiement se fait sur place, entre vous. Ne payez jamais à l'avance et ne donnez jamais vos coordonnées bancaires.</p><h4>Comment laisser un avis ?</h4><p>Après un rendez-vous accepté et terminé, un bouton « Noter » apparaît dans la conversation.</p><h4>Comment signaler ou bloquer quelqu'un ?</h4><p>Dans une conversation, touchez « Signaler » ou « Bloquer ». Pour une annonce, utilisez le bouton de signalement sur l'annonce.</p><h4>Un problème ?</h4><p>Écrivez-nous à ${esc(LEGAL.email)}.</p>`},
 terms:{t:"Conditions d'utilisation",h:()=>`<p class="meta">Dernière mise à jour : ${esc(LEGAL.updated)}</p>
 <h4>1. Objet</h4><p>CoupDeMain met en relation des voisins qui proposent ou demandent un coup de main (bricolage, jardinage, courses, cours, etc.). CoupDeMain n'est ni employeur, ni prestataire, ni partie aux échanges : les services sont convenus et réalisés directement entre membres. Aucun paiement ne transite par l'application.</p>
 <h4>2. Compte</h4><p>Il faut avoir 18 ans ou plus. Le compte est personnel : une personne, un compte. Les informations fournies doivent être exactes, et l'adresse e-mail doit être confirmée pour publier ou écrire. Vous êtes responsable de la confidentialité de votre mot de passe.</p>
@@ -318,6 +323,12 @@ privacy:{t:"Politique de confidentialité",h:()=>`<p class="meta">Dernière mise
 <h4>8. Cookies et stockage local</h4><p>Nous n'utilisons ni cookies publicitaires ni outil de mesure d'audience. Le stockage local de votre navigateur sert uniquement à garder votre session et vos préférences.</p>
 <h4>9. Sécurité</h4><p>Les échanges sont chiffrés, et les règles d'accès à la base de données limitent chaque membre à ses propres données. Aucun système n'est infaillible : en cas de violation, nous préviendrons les personnes concernées et la CNIL lorsque la loi l'exige.</p>
 <h4>10. Mineurs</h4><p>L'application est réservée aux personnes de 18 ans et plus.</p>`}};
+
+const UIK="cdm_ui";let UI={theme:"auto",size:"n"};try{UI=Object.assign(UI,JSON.parse(localStorage.getItem(UIK)||"{}"))}catch(e){}
+const applyUI=()=>{const r=document.documentElement;if(UI.theme==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",UI.theme);r.style.setProperty("--z",{n:".9",l:"1",x:"1.12"}[UI.size]||".9")};
+const saveUI=()=>{try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(e){}applyUI()};applyUI();
+const REF={"Bricolage":"10 à 25 €/h","Jardinage":"12 à 25 €/h","Ménage":"12 à 20 €/h","Courses":"5 à 15 € la course","Informatique":"15 à 30 €/h","Garde d'animaux":"10 à 20 € par visite","Cours":"15 à 35 €/h","Déménagement":"15 à 30 €/h","Garde d'enfants":"10 à 15 €/h","Cuisine":"12 à 25 €/h","Démarches":"10 à 20 €/h","Prêt d'objets":"Souvent gratuit ou quelques €"};
+const track=(n,p)=>{try{window.cdmTrack&&window.cdmTrack(n,p)}catch(e){}};
 function showLegal(k){const d=LEGAL_TXT[k];if(!d)return;
   const o=document.createElement("div");o.className="sheet";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label",d.t);
   o.innerHTML=`<div class="sheetc"><div class="sheeth"><h3>${esc(d.t)}</h3><button class="chip" type="button" id="lc">Fermer</button></div><div class="legal">${d.h()}</div></div>`;
@@ -366,7 +377,7 @@ window.cdmMsgIn=function(list,init){
   if(state.view==="chat"&&state.drawChat&&document.getElementById("ms"))state.drawChat();
   else if(state.view==="inbox")inbox();
 };
-function go(v){if(state.user&&state.authed&&!complete(state.user)&&!["edit","welcome"].includes(v))v="edit";if(v==="home"&&state.focusId)v="find";if(v!=="offer")state.editId=null;state.view=v;remine();ensureMsgSub();ensureHome();render();window.scrollTo(0,0)}
+function go(v){if(state.user&&state.authed&&!complete(state.user)&&!["edit","welcome"].includes(v))v="edit";if(v==="home"&&state.focusId)v="find";if(v!=="offer")state.editId=null;state.view=v;track("screen_"+v);remine();ensureMsgSub();ensureHome();render();window.scrollTo(0,0)}
 function render(){
   setMe();
   if(!state.user&&!["welcome","profile"].includes(state.view))state.view="welcome";
@@ -462,11 +473,12 @@ function offer(){
   <label for="ti">Titre de l'annonce</label><input id="ti" maxlength="60">
   <label for="de">Description</label><textarea id="de" rows="3" maxlength="240"></textarea>
   <label for="pt">Type de tarif</label><select id="pt"><option value="h"></option><option value="f"></option><option value="r"></option><option value="g"></option></select>
-  <div id="pa"><label for="pr" id="prl">Montant en €</label><input id="pr" type="number" inputmode="decimal" min="1" max="9999" step="0.5" placeholder="Ex. : 10"><p class="meta" id="ph2"></p></div>
+  <div id="pa"><label for="pr" id="prl">Montant en €</label><input id="pr" type="number" inputmode="decimal" min="1" max="9999" step="0.5" placeholder="Ex. : 10"><p class="meta" id="ph2"></p></div><p class="meta" id="refp"></p>
   <label for="rec">Fréquence</label><select id="rec"><option value="">Ponctuel</option><option>Chaque semaine</option><option>Tous les 15 jours</option><option>Chaque mois</option></select>
   <label for="pf0">Photo (facultatif)</label><input id="pf0" type="file" accept="image/*"><img id="pv0" class="adimg" alt="Aperçu de la photo" hidden><button class="link" type="button" id="rmp" hidden>Retirer la photo</button>
   <div class="err" id="e" role="alert"></div><button class="btn solid" id="sb" type="submit" style="width:100%">Publier mon annonce</button></form>`;
   const pt=$("#pt"),need=()=>state.offerType==="need";
+  const refUp=()=>{const r=REF[$("#cat").value];$("#refp").textContent=r?"Tarif habituel pour cette catégorie : "+r+". Restez raisonnable.":""};$("#cat").addEventListener("change",refUp);refUp();
   const hint=()=>{const v=pt.value,n=need();$("#pa").hidden=v==="g"||v==="r";
     $("#ph2").textContent=v==="h"?(n?"Combien êtes-vous prêt(e) à payer par heure, par exemple 12 €/h.":"Vous facturez chaque heure travaillée, par exemple 10 €/h."):(n?"Budget total pour l'ensemble du service, par exemple 40 €.":"Prix fixe pour l'ensemble du service, par exemple 50 € pour tout le jardin.")};
   const sync=()=>{const n=need();
@@ -515,6 +527,9 @@ function profile(){
     <label class="set" for="sn" style="margin:0;font-weight:400"><span><b>Notifications</b><small>Alertes pour les nouveaux messages</small></span><input type="checkbox" class="sw" id="sn" role="switch" ${state.user.notif!==false?"checked":""}></label>
     <label class="set" for="sa" style="margin:0;font-weight:400"><span><b>Nouvelles annonces</b><small>Alerte quand une annonce est publiée près de vous (app ouverte)</small></span><input type="checkbox" class="sw" id="sa" role="switch" ${state.user.adAlerts!==false?"checked":""}></label></div>
     <div class="card"><h3>Mes alertes</h3><p class="meta" style="margin:0 0 10px">Choisissez les catégories qui vous intéressent pour les alertes de nouvelles annonces. Aucune sélection = toutes les catégories.</p><div class="row2">${CATS.map(c=>`<button class="chip" type="button" data-ac="${esc(c)}" aria-pressed="${(state.user.alertCats||[]).includes(c)}">${EMO[c]} ${esc(c)}</button>`).join("")}</div></div>
+<div class="card"><h3>Mon activité</h3><p class="meta" style="margin:0">${(()=>{const n=(state.user.convs||[]).filter(c=>rdvDone(c.msgs)).length;return n?n+" rendez-vous réalisé"+(n>1?"s":""):"Aucun rendez-vous réalisé pour le moment"})()}</p></div>
+    <div class="card"><h3>Affichage</h3><p class="meta" style="margin:0 0 8px">Thème</p><div class="row2">${[["auto","Auto"],["light","Clair"],["dark","Sombre"]].map(x=>`<button class="chip" type="button" data-th="${x[0]}" aria-pressed="${UI.theme===x[0]}">${x[1]}</button>`).join("")}</div><p class="meta" style="margin:12px 0 8px">Taille du texte</p><div class="row2">${[["n","Normal"],["l","Grand"],["x","Très grand"]].map(x=>`<button class="chip" type="button" data-sz="${x[0]}" aria-pressed="${UI.size===x[0]}">${x[1]}</button>`).join("")}</div></div>
+    <div class="card"><h3>Aide et invitation</h3><div class="row2"><button class="chip" type="button" data-legal="faq">Aide / FAQ</button><button class="chip" type="button" id="ct">Nous contacter</button><button class="chip" type="button" id="inv">Inviter un voisin</button></div></div>
     <div class="card"><h3>Informations légales</h3><div class="row2"><button class="chip" type="button" data-legal="terms">Conditions d'utilisation</button><button class="chip" type="button" data-legal="privacy">Confidentialité</button></div></div>
     <button class="btn solid" id="out" style="width:100%">Se déconnecter</button><button class="btn" id="rm" style="width:100%;margin-top:8px;background:transparent;color:var(--err);border:1px solid var(--err)">Supprimer mon compte</button>`;
     $("#sn").onchange=e=>{const u=state.user;u.notif=e.target.checked;save();badge();
@@ -533,6 +548,10 @@ function profile(){
     main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delAd(+b.dataset.del,profile));
     main.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{state.editId=+b.dataset.edit;go("offer")});
     main.querySelectorAll("[data-ac]").forEach(b=>b.onclick=()=>{const u=state.user;u.alertCats=u.alertCats||[];const c=b.dataset.ac,i=u.alertCats.indexOf(c);if(i>=0)u.alertCats.splice(i,1);else u.alertCats.push(c);b.setAttribute("aria-pressed",String(i<0));save()});
+    main.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{UI.theme=b.dataset.th;saveUI();profile()});
+    main.querySelectorAll("[data-sz]").forEach(b=>b.onclick=()=>{UI.size=b.dataset.sz;saveUI();profile()});
+    $("#ct").onclick=()=>{location.href="mailto:"+LEGAL.email+"?subject="+encodeURIComponent("CoupDeMain : contact")};
+    $("#inv").onclick=async()=>{const url=location.origin+location.pathname+"?ref="+encodeURIComponent(meKey()||""),txt="Rejoins-moi sur CoupDeMain, l'entraide près de chez nous !";track("invite");try{if(navigator.share){await navigator.share({title:"CoupDeMain",text:txt,url})}else{await navigator.clipboard.writeText(txt+" "+url);toast("Lien copié")}}catch(e){}};
     $("#ph").onclick=()=>go("photo");
     $("#ed").onclick=()=>go("edit");
     $("#rm").onclick=()=>go("delAcc");
@@ -709,14 +728,14 @@ function chat(){
   const who=c?c.who:ad.who,title=c?c.title:ad.title,cat=c?c.cat:ad.cat,price=ad?ad.price:"";
   if(c&&c.unread)c.unread=false;if(c&&c.remote){u.seen=u.seen||{};u.seen[cid]=Date.now()}save();badge();
   const cur=()=>u.convs.find(x=>x.id===cid)||c;
-  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from==="me"?"mine":"them"}">${m.rdv&&rdvOk(m)?rdvBody(m,ms):(okImg(m.img)?'<img class="mimg" src="'+m.img+'" alt="Photo envoyée">':"")+esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.querySelectorAll(".mimg").forEach(i=>i.onclick=()=>showImg(i.src));
+  const draw=()=>{const cc0=cur(),ms=cc0?cc0.msgs:[],el=$("#ms");if(!el)return;el.innerHTML=ms.length?ms.map(m=>`<div class="bub ${m.from==="me"?"mine":"them"}">${m.rdv&&rdvOk(m)?rdvBody(m,ms):(okImg(m.img)?'<img class="mimg" src="'+m.img+'" alt="Photo envoyée">':"")+esc(m.text)}<small>${hh(m.t)}</small></div>`).join(""):`<div class="card warn"><b>Avant d'écrire</b><br>Ne payez jamais à l'avance et ne donnez jamais vos coordonnées bancaires. Le paiement se fait sur place, après le service.</div><p class="empty">Présentez-vous et proposez un jour pour le rendez-vous.</p>`;el.querySelectorAll(".mimg").forEach(i=>i.onclick=()=>showImg(i.src));
     el.querySelectorAll("[data-ra]").forEach(b=>b.onclick=()=>{const ok=b.dataset.ok==="1";sendMsg({text:ok?"J'accepte le rendez-vous":"Je décline le rendez-vous",re:{ref:+b.dataset.ra,ok}})});
     el.querySelectorAll("[data-rc]").forEach(b=>b.onclick=()=>{if(confirm("Annuler ce rendez-vous ?"))sendMsg({text:"J'annule le rendez-vous",re:{ref:+b.dataset.rc,cancel:true}})});
     el.querySelectorAll("[data-ics]").forEach(b=>b.onclick=()=>{const m=ms.find(x=>x.t===+b.dataset.ics);if(m)icsDl(m,title,who)});el.scrollTop=el.scrollHeight};
   main.innerHTML=`<div class="chat"><div class="item" style="align-items:center;margin-bottom:8px"><button class="chip" id="bk" type="button" aria-label="Retour aux messages">${ico("chevron-left")}</button><div class="av" aria-hidden="true">${EMO[cat]}</div><div><h3>${esc(who)}</h3><div class="meta">${esc(title)}${price?" · "+esc(price):""}${ad?starTxt(ad):""}</div></div><button class="chip" id="rt" type="button" style="margin-left:auto${c&&(c.rating||rdvDone(c.msgs))?"":";opacity:.5"}" aria-disabled="${c&&(c.rating||rdvDone(c.msgs))?"false":"true"}">${c&&c.rating?"Modifier ma note":"Noter"}</button></div>
   <div id="rp" class="card" hidden></div><div id="rinv" class="card" hidden></div><div id="rd" class="card" hidden></div>
   <div id="ms" class="ms" aria-live="polite"></div>
-  <div style="margin-top:6px"><button class="chip" id="rdvb" type="button">${ico("calendar")} Proposer un rendez-vous</button></div><form id="mf" class="mf"><label for="mt" class="sr">Votre message</label><button class="chip" type="button" id="pb" aria-label="Envoyer une photo">${ico("camera")}</button><input type="file" id="pf" accept="image/*" hidden><input id="mt" maxlength="300" autocomplete="off" placeholder="Écrire un message" value="${c?"":esc(ad&&typeOf(ad)==="need"?"Bonjour "+who+", je peux vous aider pour « "+title+" ». Quand seriez-vous disponible ?":"Bonjour "+who+", votre annonce « "+title+" » m'intéresse. Êtes-vous disponible cette semaine ?")}"><button class="btn solid" type="submit">Envoyer</button></form>
+  <div style="margin-top:6px"><button class="chip" id="rdvb" type="button">${ico("calendar")} Proposer un rendez-vous</button> <button class="chip" id="rpu" type="button">Signaler</button> <button class="chip" id="blu" type="button">Bloquer</button></div><form id="mf" class="mf"><label for="mt" class="sr">Votre message</label><button class="chip" type="button" id="pb" aria-label="Envoyer une photo">${ico("camera")}</button><input type="file" id="pf" accept="image/*" hidden><input id="mt" maxlength="300" autocomplete="off" placeholder="Écrire un message" value="${c?"":esc(ad&&typeOf(ad)==="need"?"Bonjour "+who+", je peux vous aider pour « "+title+" ». Quand seriez-vous disponible ?":"Bonjour "+who+", votre annonce « "+title+" » m'intéresse. Êtes-vous disponible cette semaine ?")}"><button class="btn solid" type="submit">Envoyer</button></form>
   <p class="note">${real?"Messagerie en direct : votre correspondant reçoit vos messages et vous répond ici. ":"Prototype : les réponses sont simulées. "}Le paiement se fait sur place : ne partagez jamais vos coordonnées bancaires.</p></div>`;
   draw();state.drawChat=draw;
   $("#bk").onclick=()=>{state.drawChat=null;go("inbox")};
@@ -726,6 +745,13 @@ function chat(){
   <div class="err" id="re" role="alert"></div><button class="btn solid" id="rs" type="button" style="width:100%">Publier mon avis</button>`;
     $("#rp").querySelectorAll(".star").forEach(b=>b.onclick=()=>{txt=$("#rc").value;stars=+b.dataset.s;panel()});
     $("#rs").onclick=()=>{if(!stars){$("#re").textContent="Choisissez une note de 1 à 5 étoiles.";return}cur().rating={stars,text:$("#rc").value.trim()};save();const cc=cur();if(window.cdmReviews&&u.uid&&canWrite()){window.cdmReviews.publish({adId:String(cc.adId||cc.id),stars,text:cc.rating.text,byUid:u.uid,byName:u.name||"Voisin",t:Date.now()}).catch(()=>toast("Avis enregistré sur votre appareil seulement"))}toast("Merci pour votre avis !");chat()}};
+  const peerOf=()=>{const k=cur();return String(k&&k.peer?k.peer:(ad?ad.owner:""))};
+  $("#blu").onclick=()=>{const k=peerOf();if(!k||k==="undefined"){toast("Envoyez d'abord un message");return}if(!confirm("Bloquer "+who+" ? Vous ne verrez plus ses annonces ni cette conversation."))return;u.blocked=u.blocked||[];if(!u.blocked.includes(k))u.blocked.push(k);save();track("block");toast(who+" est bloqué(e)");state.drawChat=null;go("inbox")};
+  $("#rpu").onclick=()=>{const k=peerOf();if(!k||k==="undefined"){toast("Envoyez d'abord un message");return}
+    const o=document.createElement("div");o.className="lb";o.style.cursor="default";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Signaler "+who);
+    o.innerHTML=`<div class="card" style="width:100%;max-width:420px;margin:0"><h3>Signaler ${esc(who)}</h3><div class="row2">${["Arnaque ou spam","Harcèlement","Comportement dangereux","Autre"].map(r=>`<button class="chip" type="button" data-r="${esc(r)}">${esc(r)}</button>`).join("")}</div><button class="btn" id="rc1" type="button" style="width:100%;margin-top:12px;background:var(--mint);color:var(--ink)">Annuler</button></div>`;
+    document.body.appendChild(o);o.onclick=e=>{if(e.target===o)o.remove()};o.querySelector("#rc1").onclick=()=>o.remove();
+    o.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const cc=cur();if(window.cdmReports)window.cdmReports.publish({adId:String((cc&&cc.adId)||(ad&&ad.id)||cid),reason:b.dataset.r,by:meKey(),owner:k,t:Date.now()}).catch(()=>{});track("report_user");o.remove();toast("Merci, votre signalement a été envoyé")})};
   $("#rt").onclick=()=>{const cc=cur();if(!cc||!(cc.rating||rdvDone(cc.msgs))){toast("Vous pourrez noter après un rendez-vous accepté et terminé.");return}const r=$("#rp");r.hidden=!r.hidden;if(!r.hidden)panel()};
   {const inv=$("#rinv"),k=cur();if(inv&&k&&!k.rating&&rdvDone(k.msgs)){inv.hidden=false;inv.innerHTML=`<b>${ico("check-circle")} Rendez-vous terminé</b><br>Comment ça s'est passé avec ${esc(who)} ?<br><button class="btn solid" id="ri" type="button" style="margin-top:8px">Laisser un avis</button>`;$("#ri").onclick=()=>$("#rt").click()}}
   const sendMsg=extra=>{if(!canWrite())return Promise.resolve();if(!window.cdmMsgs){toast("Messagerie indisponible pour le moment");return Promise.resolve()}
@@ -802,12 +828,14 @@ sp.onclick=hideSplash;setTimeout(hideSplash,matchMedia("(prefers-reduced-motion:
 </script>
 <script type="module">
 /* ====== CONFIGURATION FIREBASE (projet : coupdemain-553e4) ====== */
-const firebaseConfig={apiKey:"AIzaSyCYsTRNALY2DX5k4ZQEmEJCScAVL8iXkLM",authDomain:"coupdemain-553e4.firebaseapp.com",projectId:"coupdemain-553e4",storageBucket:"coupdemain-553e4.firebasestorage.app",messagingSenderId:"478076362548",appId:"1:478076362548:web:829a1ccb0717fa895e4f61"};
+const firebaseConfig={apiKey:"AIzaSyCYsTRNALY2DX5k4ZQEmEJCScAVL8iXkLM",authDomain:"coupdemain-553e4.firebaseapp.com",projectId:"coupdemain-553e4",storageBucket:"coupdemain-553e4.firebasestorage.app",messagingSenderId:"478076362548",appId:"1:478076362548:web:829a1ccb0717fa895e4f61"/* ajoutez ici : ,measurementId:"G-XXXXXXXXXX" (Firebase > Paramètres du projet) */};
 /* ================================================================ */
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendEmailVerification,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,reauthenticateWithPopup,EmailAuthProvider,GoogleAuthProvider,signInWithPopup,deleteUser} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getAnalytics,logEvent,isSupported} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 import {getFirestore,collection,doc,setDoc,getDoc,deleteDoc,onSnapshot,query,where,getDocs} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(firebaseConfig),db=getFirestore(app),fbAuth=getAuth(app);
+if(firebaseConfig.measurementId)isSupported().then(ok=>{if(ok){const an=getAnalytics(app);window.cdmTrack=(n,p)=>logEvent(an,n,p||{})}}).catch(()=>{});
 fbAuth.languageCode="fr";
 let unsubAds=null,unsubRev=null;
 /* ====== AUTHENTIFICATION ====== */
